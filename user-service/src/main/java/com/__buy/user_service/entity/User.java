@@ -2,7 +2,11 @@ package com.__buy.user_service.entity;
 
 import java.time.LocalDateTime;
 
+import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.Id;
+import org.springframework.data.annotation.LastModifiedDate;
+import org.springframework.data.annotation.Version;
+import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 import lombok.AllArgsConstructor;
@@ -26,10 +30,21 @@ public class User {
 
     private String lastName;
 
+    @Indexed(unique = true)
     private String email;
 
     private String password;
 
     @Builder.Default
-    private LocalDateTime createdAt = LocalDateTime.now();
+    private Role role = Role.USER;
+
+    @CreatedDate
+    private LocalDateTime createdAt;
+
+    @LastModifiedDate
+    private LocalDateTime updatedAt;
+
+    @Version // to Use the Optimistic Locking concepts and the idea behind is to o prevent
+             // two users from accidentaly overwriting each others concurrent edits
+    private Long version;
 }
