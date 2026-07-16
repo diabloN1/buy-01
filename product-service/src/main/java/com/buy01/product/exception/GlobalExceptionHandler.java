@@ -6,6 +6,7 @@ import java.util.Map;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
+import org.springframework.security.authorization.AuthorizationDeniedException;
 import org.springframework.web.HttpRequestMethodNotSupportedException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -99,12 +100,19 @@ public class GlobalExceptionHandler {
                                 .body(Map.of(
                                                 "error", ex.getMessage()));
         }
-        
 
         @ExceptionHandler(HttpRequestMethodNotSupportedException.class)
         public ResponseEntity<?> handleMethodNotAllowed(HttpRequestMethodNotSupportedException ex) {
                 return ResponseEntity
                                 .status(HttpStatus.METHOD_NOT_ALLOWED)
+                                .body(Map.of(
+                                                "error", ex.getMessage()));
+        }
+
+        @ExceptionHandler(AuthorizationDeniedException.class)
+        public ResponseEntity<?> handleAuthorizationDenied(AuthorizationDeniedException ex) {
+                return ResponseEntity
+                                .status(HttpStatus.FORBIDDEN)
                                 .body(Map.of(
                                                 "error", ex.getMessage()));
         }
