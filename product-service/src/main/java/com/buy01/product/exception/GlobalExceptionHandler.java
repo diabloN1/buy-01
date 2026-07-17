@@ -3,6 +3,7 @@ package com.buy01.product.exception;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.springframework.dao.OptimisticLockingFailureException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
@@ -115,6 +116,15 @@ public class GlobalExceptionHandler {
                                 .status(HttpStatus.FORBIDDEN)
                                 .body(Map.of(
                                                 "error", ex.getMessage()));
+        }
+
+        @ExceptionHandler(OptimisticLockingFailureException.class)
+        public ResponseEntity<?> versionConflictDenied(OptimisticLockingFailureException ex) {
+                return ResponseEntity
+                                .status(HttpStatus.CONFLICT)
+                                .body(Map.of(
+                                                "error",
+                                                "The resource was modified by another user. Please refresh and try again."));
         }
 
         // Catch All

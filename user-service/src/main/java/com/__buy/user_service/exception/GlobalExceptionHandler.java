@@ -1,8 +1,10 @@
 package com.__buy.user_service.exception;
 
 import java.time.LocalDateTime;
+import java.util.Map;
 import java.util.stream.Collectors;
 
+import org.springframework.dao.OptimisticLockingFailureException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.MethodArgumentNotValidException;
@@ -36,10 +38,15 @@ public class GlobalExceptionHandler {
         return buildErrorResponse(HttpStatus.BAD_REQUEST, "Validation Failed: " + errorMessage);
     }
 
+    @ExceptionHandler(OptimisticLockingFailureException.class)
+    public ResponseEntity<?> versionConflictDenied(OptimisticLockingFailureException ex) {
+        return buildErrorResponse(HttpStatus.CONFLICT,
+                "The resource was modified by another user. Please refresh and try again.");
+    }
 
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ErrorResponse> handleAllOtherExceptions(Exception ex) {
-        log.error("Unhandled exception occurred", ex); 
+        log.error("Unhandled exception occurred", ex);
 
         return buildErrorResponse(HttpStatus.INTERNAL_SERVER_ERROR, "An unexpected internal error occurred.");
     }
