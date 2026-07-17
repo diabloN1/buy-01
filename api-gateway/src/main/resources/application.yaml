@@ -21,6 +21,8 @@ spring:
               uri: lb://PRODUCT-SERVICE
               predicates:
                 - Path=/api/products/**
+              filters:
+                - StripPrefix=1
 
             - id: media-service
               uri: lb://MEDIA-SERVICE
