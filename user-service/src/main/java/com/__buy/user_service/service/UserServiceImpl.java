@@ -33,8 +33,7 @@ public class UserServiceImpl implements UserService {
         }
 
         User user = User.builder()
-                .firstName(userReq.getFirstName())
-                .lastName(userReq.getLastName())
+                .name(userReq.getName())
                 .email(userReq.getEmail())
                 .password(passwordEncoder.encode(userReq.getPassword()))
                 .role(Role.USER)
@@ -63,8 +62,7 @@ public class UserServiceImpl implements UserService {
         User user = userRepo.findById(id)
                 .orElseThrow(() -> new UserNotFoundException(id));
 
-        user.setFirstName(updateReq.getFirstName());
-        user.setLastName(updateReq.getLastName());
+        user.setName(updateReq.getName());
 
         userRepo.save(user);
         return mapToResponse(user);
@@ -83,8 +81,7 @@ public class UserServiceImpl implements UserService {
     private UserResponse mapToResponse(User user) {
         return UserResponse.builder()
                 .id(user.getId())
-                .firstName(user.getFirstName())
-                .lastName(user.getLastName())
+                .name(user.getName())
                 .email(user.getEmail())
                 .role(user.getRole())
                 .createdAt(user.getCreatedAt())

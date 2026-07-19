@@ -9,9 +9,7 @@ import lombok.Data;
 public class CreateUserRequest {
 
     @NotBlank
-    private String firstName;
-    @NotBlank
-    private String lastName;
+    private String name;
 
     @Email
     @NotBlank

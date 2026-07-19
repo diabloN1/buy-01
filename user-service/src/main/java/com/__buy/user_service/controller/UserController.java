@@ -29,7 +29,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 public class UserController {
 
     private final UserService userService;
-
+    
     @PostMapping
     @PreAuthorize("hasAuthority('ROLE_ADMIN')")
     public ResponseEntity<UserResponse> createUser(@Valid @RequestBody CreateUserRequest userReq) {

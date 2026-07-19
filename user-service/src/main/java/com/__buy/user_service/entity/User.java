@@ -26,9 +26,7 @@ public class User {
     @Id
     private String id;
 
-    private String firstName;
-
-    private String lastName;
+    private String name;
 
     @Indexed(unique = true)
     private String email;
@@ -44,7 +42,6 @@ public class User {
     @LastModifiedDate
     private LocalDateTime updatedAt;
 
-    @Version // to Use the Optimistic Locking concepts and the idea behind is to o prevent
-             // two users from accidentaly overwriting each others concurrent edits
+    @Version
     private Long version;
 }
