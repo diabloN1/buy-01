@@ -1,7 +1,6 @@
 package com.__buy.user_service.exception;
 
 import java.time.LocalDateTime;
-import java.util.Map;
 import java.util.stream.Collectors;
 
 import org.springframework.dao.OptimisticLockingFailureException;
@@ -42,6 +41,16 @@ public class GlobalExceptionHandler {
     public ResponseEntity<?> versionConflictDenied(OptimisticLockingFailureException ex) {
         return buildErrorResponse(HttpStatus.CONFLICT,
                 "The resource was modified by another user. Please refresh and try again.");
+    }
+
+    @ExceptionHandler(ConflictException.class)
+    public ResponseEntity<ErrorResponse> handleConflictException(ConflictException ex) {
+        return buildErrorResponse(HttpStatus.CONFLICT, ex.getMessage());
+    }
+
+    @ExceptionHandler(UnauthorizedException.class)
+    public ResponseEntity<ErrorResponse> handleConflictException(UnauthorizedException ex) {
+        return buildErrorResponse(HttpStatus.UNAUTHORIZED, ex.getMessage());
     }
 
     @ExceptionHandler(Exception.class)
