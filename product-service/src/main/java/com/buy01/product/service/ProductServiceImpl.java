@@ -3,6 +3,7 @@ package com.buy01.product.service;
 import org.springframework.data.domain.Page;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.stereotype.Service;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -105,20 +106,21 @@ public class ProductServiceImpl implements ProductService {
     }
 
     private String getCurrentUUID() {
-        return (String) SecurityContextHolder
-                .getContext()
+        Jwt jwt = (Jwt) SecurityContextHolder.getContext()
                 .getAuthentication()
                 .getPrincipal();
+
+        return jwt.getSubject();
     }
 
     private String getCurrentRole() {
-        return SecurityContextHolder
-                .getContext()
+        return SecurityContextHolder.getContext()
                 .getAuthentication()
                 .getAuthorities()
                 .stream()
                 .findFirst()
                 .map(GrantedAuthority::getAuthority)
+                .map(role -> role.replaceFirst("^ROLE_", ""))
                 .orElse(null);
     }
 }
