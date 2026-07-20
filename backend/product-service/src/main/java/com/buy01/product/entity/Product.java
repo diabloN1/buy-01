@@ -25,6 +25,7 @@ public class Product {
     private String name;
     private String description;
     private BigDecimal price;
+    private Integer quantity;
 
     @Indexed
     @Field("owner_id")

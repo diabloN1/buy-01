@@ -24,5 +24,7 @@ public class ProductResponse {
 
     private String userId;
 
+    private Integer quantity;
+
     private LocalDateTime createdAt;
 }
