@@ -6,6 +6,8 @@ import org.springframework.stereotype.Service;
 import com.__buy.user_service.dto.AuthResponse;
 import com.__buy.user_service.dto.LoginRequest;
 import com.__buy.user_service.dto.RegisterRequest;
+import com.__buy.user_service.dto.UserResponse;
+import com.__buy.user_service.entity.Role;
 import com.__buy.user_service.entity.User;
 import com.__buy.user_service.exception.ConflictException;
 import com.__buy.user_service.exception.UnauthorizedException;
@@ -32,11 +34,15 @@ public class AuthServiceImpl implements AuthService {
         user.setEmail(request.email());
         user.setPassword(passwordEncoder.encode(request.password()));
 
+        user.setRole(Role.valueOf(request.role().name()));
+
         user = userRepository.save(user);
 
         String token = jwtService.generateToken(user);
 
-        return new AuthResponse(token);
+        return new AuthResponse(
+                token,
+                new UserResponse(user));
     }
 
     public AuthResponse login(LoginRequest request) {
@@ -50,6 +56,8 @@ public class AuthServiceImpl implements AuthService {
 
         String token = jwtService.generateToken(user);
 
-        return new AuthResponse(token);
+        return new AuthResponse(
+                token,
+                new UserResponse(user));
     }
 }
