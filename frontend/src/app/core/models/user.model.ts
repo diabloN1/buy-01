@@ -1,0 +1,19 @@
+export type UserRole = 'USER' | 'SELLER' | 'ADMIN';
+
+export interface User {
+  id: string;
+  email: string;
+  name: string;
+  role: UserRole;
+  avatarUrl?: string;
+  createdAt?: string;
+}
+
+export interface AuthResponse {
+  token: string;
+  user: User;
+}
+
+export interface LoginRequest { email: string; password: string; }
+export interface RegisterRequest { name: string; email: string; password: string; role: UserRole; }
+export interface UpdateProfileRequest { name?: string; avatarUrl?: string; }

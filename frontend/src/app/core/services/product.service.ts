@@ -1,0 +1,34 @@
+import { Injectable, inject } from "@angular/core";
+import { HttpClient, HttpParams } from "@angular/common/http";
+import { Observable } from "rxjs";
+import { API } from "../config/api.config";
+import { Paginated, Product, ProductUpsert } from "../models/product.model";
+
+@Injectable({ providedIn: "root" })
+export class ProductService {
+  private readonly http = inject(HttpClient);
+
+  list(page = 1, pageSize = 12, q?: string): Observable<Paginated<Product>> {
+    let params = new HttpParams().set("page", page - 1).set("size", pageSize);
+    if (q) params = params.set("q", q);
+    return this.http.get<Paginated<Product>>(API.base + API.products.root, {
+      params,
+    });
+  }
+
+  get(id: string): Observable<Product> {
+    return this.http.get<Product>(API.base + API.products.byId(id));
+  }
+
+  create(body: ProductUpsert): Observable<Product> {
+    return this.http.post<Product>(API.base + API.products.root, body);
+  }
+
+  update(id: string, body: ProductUpsert): Observable<Product> {
+    return this.http.put<Product>(API.base + API.products.byId(id), body);
+  }
+
+  delete(id: string): Observable<void> {
+    return this.http.delete<void>(API.base + API.products.byId(id));
+  }
+}
