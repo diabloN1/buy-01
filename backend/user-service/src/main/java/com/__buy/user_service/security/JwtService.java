@@ -27,7 +27,7 @@ public class JwtService {
                 .claim("role", user.getRole().name())
                 .issuedAt(new Date())
                 .expiration(new Date(System.currentTimeMillis() + 1000 * 60 * 60))
-                .signWith(getSigningKey())
+                .signWith(getSigningKey(), Jwts.SIG.HS384)
                 .compact();
     }
 }

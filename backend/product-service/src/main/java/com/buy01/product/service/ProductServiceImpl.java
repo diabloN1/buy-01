@@ -33,6 +33,7 @@ public class ProductServiceImpl implements ProductService {
                 .name(req.name())
                 .description(req.description())
                 .price(req.price())
+                .quantity(req.quantity())
                 .userId(currentUserId)
                 .build();
 
@@ -66,6 +67,7 @@ public class ProductServiceImpl implements ProductService {
         product.setName(updated.name());
         product.setDescription(updated.description());
         product.setPrice(updated.price());
+        product.setQuantity(updated.quantity());
 
         log.info("Product {} updated successfully", id);
         return mapToResponse(productRepository.save(product));
@@ -96,6 +98,7 @@ public class ProductServiceImpl implements ProductService {
                 product.getDescription(),
                 product.getPrice(),
                 product.getUserId(),
+                product.getQuantity(),
                 product.getCreatedAt());
     }
 

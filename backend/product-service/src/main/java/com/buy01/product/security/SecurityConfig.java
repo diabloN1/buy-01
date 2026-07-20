@@ -4,6 +4,7 @@ import jakarta.servlet.http.HttpServletResponse;
 
 import javax.crypto.SecretKey;
 import javax.crypto.spec.SecretKeySpec;
+import io.jsonwebtoken.security.Keys;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
@@ -35,7 +36,9 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(HttpMethod.GET, "/products/**").permitAll()
                         .anyRequest().authenticated())
-                .oauth2ResourceServer(oauth -> oauth.jwt(Customizer.withDefaults()));
+                .oauth2ResourceServer(oauth -> oauth
+                        .jwt(jwt -> jwt
+                                .jwtAuthenticationConverter(jwtAuthenticationConverter())));
         ;
 
         // Security exceptions
@@ -62,10 +65,11 @@ public class SecurityConfig {
 
         SecretKey key = new SecretKeySpec(
                 secret.getBytes(),
-                "HmacSHA256");
+                "HmacSHA384");
 
         return NimbusJwtDecoder
                 .withSecretKey(key)
+                .macAlgorithm(org.springframework.security.oauth2.jose.jws.MacAlgorithm.HS384)
                 .build();
     }
 
