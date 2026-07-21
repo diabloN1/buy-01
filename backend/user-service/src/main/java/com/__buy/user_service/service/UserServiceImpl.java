@@ -69,6 +69,15 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
+    public UserResponse getCurrentUser(String userId) {
+
+        User user = userRepo.findById(userId)
+                .orElseThrow(() -> new UserNotFoundException(userId));
+
+        return mapToResponse(user);
+    }
+
+    @Override
     public void deleteUser(String id) {
         if (!userRepo.existsById(id)) {
             throw new UserNotFoundException(id);

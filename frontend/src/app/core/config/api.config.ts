@@ -23,6 +23,6 @@ export const API = {
     byId: (id: string) => `/media/images/${id}`,
   },
   profile: {
-    me: "/me",
+    me: "/users/me",
   },
 } as const;

@@ -14,7 +14,6 @@ import { MatIconModule } from "@angular/material/icon";
 import { AuthService } from "@core/services/auth.service";
 import { NotificationService } from "@core/services/notification.service";
 import { FieldErrorComponent } from "@shared/components/field-error.component";
-import { HttpErrorResponse } from "@angular/common/http";
 
 @Component({
   selector: "app-login",
