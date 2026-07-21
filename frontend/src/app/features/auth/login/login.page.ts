@@ -14,6 +14,7 @@ import { MatIconModule } from "@angular/material/icon";
 import { AuthService } from "@core/services/auth.service";
 import { NotificationService } from "@core/services/notification.service";
 import { FieldErrorComponent } from "@shared/components/field-error.component";
+import { HttpErrorResponse } from "@angular/common/http";
 
 @Component({
   selector: "app-login",
@@ -88,7 +89,11 @@ import { FieldErrorComponent } from "@shared/components/field-error.component";
         display: flex;
         justify-content: center;
         padding: 80px 16px;
-        background: radial-gradient(circle at 50% 50%, rgba(99, 102, 241, 0.05) 0%, transparent 50%);
+        background: radial-gradient(
+          circle at 50% 50%,
+          rgba(99, 102, 241, 0.05) 0%,
+          transparent 50%
+        );
       }
       .auth-card {
         width: 100%;
