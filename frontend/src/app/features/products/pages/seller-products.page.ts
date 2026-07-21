@@ -1,0 +1,216 @@
+import {
+  ChangeDetectionStrategy,
+  Component,
+  inject,
+  signal,
+} from "@angular/core";
+import { CommonModule } from "@angular/common";
+import { RouterLink } from "@angular/router";
+import { MatTableModule } from "@angular/material/table";
+import { MatButtonModule } from "@angular/material/button";
+import { MatIconModule } from "@angular/material/icon";
+import { MatDialog, MatDialogModule } from "@angular/material/dialog";
+import { MatPaginatorModule, PageEvent } from "@angular/material/paginator";
+import { ProductService } from "@core/services/product.service";
+import { AuthService } from "@core/services/auth.service";
+import { NotificationService } from "@core/services/notification.service";
+import { Product } from "@core/models/product.model";
+import { ConfirmDialogComponent } from "@shared/components/confirm-dialog.component";
+import { LoadingSpinnerComponent } from "@shared/components/loading-spinner.component";
+import { EmptyStateComponent } from "@shared/components/empty-state.component";
+
+@Component({
+  selector: "app-seller-products",
+  standalone: true,
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  imports: [
+    CommonModule,
+    RouterLink,
+    MatTableModule,
+    MatButtonModule,
+    MatIconModule,
+    MatDialogModule,
+    MatPaginatorModule,
+    LoadingSpinnerComponent,
+    EmptyStateComponent,
+  ],
+  template: `
+    <section class="container">
+      <div class="row">
+        <h1 class="grow">My products</h1>
+        <a mat-flat-button color="primary" routerLink="/seller/products/new"
+          ><mat-icon>add</mat-icon> New product</a
+        >
+      </div>
+
+      @if (loading()) { <app-loading-spinner /> } @else if (!items().length) {
+      <app-empty-state
+        icon="inventory_2"
+        title="No products yet"
+        description="Create your first product."
+      />
+      } @else {
+      <div class="app-card table-wrap">
+        <table mat-table [dataSource]="items()" [trackBy]="trackById">
+          <ng-container matColumnDef="thumb"
+            ><th mat-header-cell *matHeaderCellDef></th>
+            <td mat-cell *matCellDef="let p">
+              @if (p.imageUrls && p.imageUrls[0]) {
+              <img [src]="p.imageUrls[0]" alt="" class="thumb" /> } @else {
+              <mat-icon>image</mat-icon> }
+            </td></ng-container
+          >
+          <ng-container matColumnDef="name"
+            ><th mat-header-cell *matHeaderCellDef>Name</th>
+            <td mat-cell *matCellDef="let p">{{ p.name }}</td></ng-container
+          >
+          <ng-container matColumnDef="price"
+            ><th mat-header-cell *matHeaderCellDef>Price</th>
+            <td mat-cell *matCellDef="let p">
+              {{ p.price | currency }}
+            </td></ng-container
+          >
+          <ng-container matColumnDef="qty"
+            ><th mat-header-cell *matHeaderCellDef>Qty</th>
+            <td mat-cell *matCellDef="let p">{{ p.quantity }}</td></ng-container
+          >
+          <ng-container matColumnDef="actions"
+            ><th mat-header-cell *matHeaderCellDef></th>
+            <td mat-cell *matCellDef="let p">
+              <a
+                mat-icon-button
+                [routerLink]="['/products', p.id]"
+                aria-label="View"
+                ><mat-icon>visibility</mat-icon></a
+              >
+              <a
+                mat-icon-button
+                [routerLink]="['/seller/products', p.id, 'edit']"
+                aria-label="Edit"
+                ><mat-icon>edit</mat-icon></a
+              >
+              <button
+                mat-icon-button
+                color="warn"
+                (click)="remove(p)"
+                aria-label="Delete"
+              >
+                <mat-icon>delete</mat-icon>
+              </button>
+            </td></ng-container
+          >
+          <tr mat-header-row *matHeaderRowDef="cols"></tr>
+          <tr mat-row *matRowDef="let r; columns: cols"></tr>
+        </table>
+        <mat-paginator
+          [length]="total()"
+          [pageSize]="pageSize()"
+          [pageIndex]="page() - 1"
+          [pageSizeOptions]="[10, 25, 50]"
+          (page)="onPage($event)"
+        />
+      </div>
+      }
+    </section>
+  `,
+  styles: [
+    `
+      .table-wrap {
+        overflow: hidden;
+        border: 1px solid var(--app-border);
+        border-radius: var(--app-radius);
+        box-shadow: var(--app-shadow);
+        margin-top: 24px;
+        background: var(--app-surface);
+      }
+      table {
+        width: 100%;
+        border-collapse: collapse;
+      }
+      .thumb {
+        width: 44px;
+        height: 44px;
+        object-fit: cover;
+        border-radius: var(--app-radius-sm);
+        border: 1px solid var(--app-border);
+      }
+      th.mat-mdc-header-cell {
+        font-weight: 600;
+        color: var(--app-fg);
+        font-size: 14px;
+        padding: 16px !important;
+        border-bottom: 2px solid var(--app-border);
+      }
+      td.mat-mdc-cell {
+        padding: 16px !important;
+        font-size: 14px;
+        border-bottom: 1px solid var(--app-border);
+        vertical-align: middle;
+      }
+      th.mat-mdc-header-cell:first-of-type,
+      td.mat-mdc-cell:first-of-type {
+        padding-left: 24px !important;
+      }
+      th.mat-mdc-header-cell:last-of-type,
+      td.mat-mdc-cell:last-of-type {
+        padding-right: 24px !important;
+      }
+    `,
+  ],
+})
+export class SellerProductsPage {
+  private readonly svc = inject(ProductService);
+  private readonly auth = inject(AuthService);
+  private readonly dialog = inject(MatDialog);
+  private readonly notify = inject(NotificationService);
+
+  readonly cols = ["thumb", "name", "price", "qty", "actions"];
+  readonly items = signal<Product[]>([]);
+  readonly total = signal(0);
+  readonly page = signal(1);
+  readonly pageSize = signal(10);
+  readonly loading = signal(true);
+
+  constructor() {
+    this.load();
+  }
+  trackById = (_: number, p: Product) => p.id;
+  onPage(e: PageEvent) {
+    this.page.set(e.pageIndex + 1);
+    this.pageSize.set(e.pageSize);
+    this.load();
+  }
+
+  private load() {
+    this.loading.set(true);
+    this.svc.list(this.page(), this.pageSize()).subscribe({
+      next: (r) => {
+        const uid = this.auth.user()?.id;
+        this.items.set(r.content.filter((p) => p.userId === uid));
+        this.total.set(r.totalElements);
+        this.loading.set(false);
+      },
+      error: () => this.loading.set(false),
+    });
+  }
+
+  remove(p: Product) {
+    this.dialog
+      .open(ConfirmDialogComponent, {
+        data: {
+          title: "Delete product",
+          message: `Delete "${p.name}"? This cannot be undone.`,
+          danger: true,
+          confirmLabel: "Delete",
+        },
+      })
+      .afterClosed()
+      .subscribe((ok) => {
+        if (!ok) return;
+        this.svc.delete(p.id).subscribe(() => {
+          this.notify.success("Product deleted");
+          this.load();
+        });
+      });
+  }
+}
