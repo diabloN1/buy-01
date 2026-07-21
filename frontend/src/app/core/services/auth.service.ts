@@ -11,7 +11,7 @@ import {
   UserRole,
 } from "../models/user.model";
 import { TokenStorage } from "./token.storage";
-import { isExpired } from "./jwt.util";
+import { decodeJwt, isExpired } from "./jwt.util";
 
 @Injectable({ providedIn: "root" })
 export class AuthService {
@@ -20,10 +20,15 @@ export class AuthService {
   private readonly router = inject(Router);
 
   private readonly _user = signal<User | null>(this.storage.getUser());
+  private readonly _token = signal<string | null>(this.storage.getToken());
+
+  readonly token = this._token.asReadonly();
   readonly user = this._user.asReadonly();
   readonly isAuthenticated = computed(() => {
+    const user = this._user();
     const t = this.storage.getToken();
-    return !!t && !isExpired(t) && !!this._user();
+
+    return !!t && !isExpired(t) && !!user;
   });
   readonly role = computed<UserRole | null>(() => this._user()?.role ?? null);
   readonly isSeller = computed(() => this.role() === "SELLER");
@@ -39,16 +44,26 @@ export class AuthService {
       .post<AuthResponse>(API.base + API.auth.login, body)
       .pipe(tap((r) => this.setSession(r)));
   }
+
   register(body: RegisterRequest): Observable<AuthResponse> {
     return this.http
       .post<AuthResponse>(API.base + API.auth.register, body)
       .pipe(tap((r) => this.setSession(r)));
   }
+
   logout(redirect = true): void {
     this.storage.clear();
+
+    this._token.set(null);
     this._user.set(null);
-    if (this.expiryTimer) clearTimeout(this.expiryTimer);
-    if (redirect) this.router.navigateByUrl("/auth/login");
+
+    if (this.expiryTimer) {
+      clearTimeout(this.expiryTimer);
+    }
+
+    if (redirect) {
+      this.router.navigateByUrl("/auth/login");
+    }
   }
 
   hasRole(roles: UserRole[]): boolean {
@@ -66,11 +81,16 @@ export class AuthService {
   private validateSession(): void {
     const token = this.storage.getToken();
     const user = this.storage.getUser();
+
     const stale = !token || !user || isExpired(token);
+
     if (stale) {
       this.storage.clear();
+      this._token.set(null);
       this._user.set(null);
     } else {
+      this._token.set(token);
+      this._user.set(user);
       this.scheduleAutoLogout(token);
     }
   }
@@ -78,6 +98,8 @@ export class AuthService {
   private setSession(res: AuthResponse): void {
     this.storage.setToken(res.token);
     this.storage.setUser(res.user);
+
+    this._token.set(res.token);
     this._user.set(res.user);
 
     this.scheduleAutoLogout(res.token);
