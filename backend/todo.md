@@ -1,0 +1,1 @@
+[ ] - use kafka for communication from product-service (deleteProduct) to media-service (deleteImage) PRODUCT_DELETED (avatar too)

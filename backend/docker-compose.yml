@@ -43,12 +43,33 @@ services:
       timeout: 3s
       retries: 20
 
+  media:
+    build: ./media-service
+    depends_on:
+      eureka:
+        condition: service_healthy
+      minio:
+        condition: service_healthy
+      mongodb:
+        condition: service_started
+    ports:
+      - "8083:8083"
+    environment:
+      JWT_SECRET: tr9+iBC8Pz/AAdHWef4hgQpuN3U7pcOtDj4hgQpuN3U7pcOtDYJl6zRyXI=
+    healthcheck:
+      test: ["CMD", "wget", "-q", "-O", "-", "http://localhost:8083/actuator/health"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+
   api-gateway:
     build: ./api-gateway
     depends_on:
       product:
         condition: service_healthy
       user:
+        condition: service_healthy
+      media:
         condition: service_healthy
     ports:
       - "8080:8080"
@@ -67,6 +88,28 @@ services:
 
     volumes:
       - mongo-data:/data/db
+  
+  minio:
+    image: minio/minio
 
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+
+    environment:
+      MINIO_ROOT_USER: admin
+      MINIO_ROOT_PASSWORD: password123
+
+    command: server /data --console-address ":9001"
+
+    volumes:
+      - minio-data:/data
+
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9000/minio/health/live"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
 volumes:
   mongo-data:
+  minio-data:

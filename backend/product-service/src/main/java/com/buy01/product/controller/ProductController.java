@@ -1,10 +1,14 @@
 package com.buy01.product.controller;
 
+import java.util.List;
+
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import com.buy01.product.DTOs.CreateRequest;
 import com.buy01.product.DTOs.ProductResponse;
@@ -34,20 +38,21 @@ public class ProductController {
         return productService.getProductById(id);
     }
 
-    @PreAuthorize("hasRole('USER') or hasRole('ADMIN') or hasRole('SELLER')")
-    @PostMapping
-    @ResponseStatus(HttpStatus.CREATED)
-    public ProductResponse createProduct(@Valid @RequestBody CreateRequest req) {
-        return productService.createProduct(req);
+    @PreAuthorize("hasRole('ADMIN') or hasRole('SELLER')")
+    @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ProductResponse create(
+            @RequestPart("product") @Valid CreateRequest request,
+            @RequestPart("images") List<MultipartFile> images) {
+        return productService.createProduct(request, images);
     }
 
-    @PreAuthorize("hasRole('USER') or hasRole('ADMIN') or hasRole('SELLER')")
+    @PreAuthorize("hasRole('ADMIN') or hasRole('SELLER')")
     @PutMapping("/{id}")
     public ProductResponse updateProduct(@PathVariable String id, @Valid @RequestBody UpdateRequest req) {
         return productService.updateProduct(id, req);
     }
 
-    @PreAuthorize("hasRole('USER') or hasRole('ADMIN') or hasRole('SELLER')")
+    @PreAuthorize("hasRole('ADMIN') or hasRole('SELLER')")
     @DeleteMapping("/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void deleteProduct(@PathVariable String id) {

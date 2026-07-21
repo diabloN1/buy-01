@@ -1,16 +1,23 @@
 package com.buy01.product.service;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.springframework.data.domain.Page;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
+
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Pageable;
 
 import com.buy01.product.DTOs.CreateRequest;
+import com.buy01.product.DTOs.MediaResponse;
 import com.buy01.product.DTOs.UpdateRequest;
+import com.buy01.product.client.MediaClient;
 import com.buy01.product.DTOs.ProductResponse;
 import com.buy01.product.entity.Product;
 import com.buy01.product.exception.custom.ForbiddenException;
@@ -23,11 +30,11 @@ import com.buy01.product.repository.ProductRepository;
 public class ProductServiceImpl implements ProductService {
 
     private final ProductRepository productRepository;
+    private final MediaClient mediaClient;
 
     @Override
-    public ProductResponse createProduct(CreateRequest req) {
+    public ProductResponse createProduct(CreateRequest req, List<MultipartFile> images) {
         String currentUserId = getCurrentUUID();
-        log.info("User {} is creating a new product", currentUserId);
 
         Product product = Product.builder()
                 .name(req.name())
@@ -35,9 +42,21 @@ public class ProductServiceImpl implements ProductService {
                 .price(req.price())
                 .quantity(req.quantity())
                 .userId(currentUserId)
+                .imageIds(new ArrayList<>())
                 .build();
 
-        return mapToResponse(productRepository.save(product));
+        Product saved = productRepository.save(product);
+        List<String> imageIds = new ArrayList<>();
+
+        for (MultipartFile image : images) {
+            MediaResponse media = mediaClient.upload(image, saved.getId());
+            imageIds.add(media.id());
+        }
+
+        saved.setImageIds(imageIds);
+        saved = productRepository.save(saved);
+
+        return mapToResponse(saved);
     }
 
     @Override

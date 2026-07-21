@@ -1,17 +1,15 @@
-package com.buy01.product;
+package com.buy01.media;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.cloud.openfeign.EnableFeignClients;
 import org.springframework.data.mongodb.config.EnableMongoAuditing;
 
 @SpringBootApplication
 @EnableMongoAuditing
-@EnableFeignClients
-public class ProductApplication {
+public class MediaApplication {
 
 	public static void main(String[] args) {
-		SpringApplication.run(ProductApplication.class, args);
+		SpringApplication.run(MediaApplication.class, args);
 	}
 
 }

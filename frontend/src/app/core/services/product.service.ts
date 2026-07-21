@@ -20,8 +20,21 @@ export class ProductService {
     return this.http.get<Product>(API.base + API.products.byId(id));
   }
 
-  create(body: ProductUpsert): Observable<Product> {
-    return this.http.post<Product>(API.base + API.products.root, body);
+  create(body: ProductUpsert, images: File[]): Observable<Product> {
+    const formData = new FormData();
+
+    formData.append(
+      "product",
+      new Blob([JSON.stringify(body)], {
+        type: "application/json",
+      }),
+    );
+
+    images.forEach((file) => {
+      formData.append("images", file);
+    });
+
+    return this.http.post<Product>(API.base + API.products.root, formData);
   }
 
   update(id: string, body: ProductUpsert): Observable<Product> {

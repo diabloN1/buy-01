@@ -1,4 +1,4 @@
-package com.buy01.product.exception;
+package com.buy01.media.exception;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -8,18 +8,17 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.security.authorization.AuthorizationDeniedException;
-import org.springframework.web.HttpMediaTypeNotSupportedException;
 import org.springframework.web.HttpRequestMethodNotSupportedException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.servlet.resource.NoResourceFoundException;
 
-import com.buy01.product.exception.custom.BadRequestException;
-import com.buy01.product.exception.custom.ConflictException;
-import com.buy01.product.exception.custom.ForbiddenException;
-import com.buy01.product.exception.custom.NotFoundException;
-import com.buy01.product.exception.custom.UnauthorizedException;
+import com.buy01.media.exception.custom.BadRequestException;
+import com.buy01.media.exception.custom.ConflictException;
+import com.buy01.media.exception.custom.ForbiddenException;
+import com.buy01.media.exception.custom.NotFoundException;
+import com.buy01.media.exception.custom.UnauthorizedException;
 
 @RestControllerAdvice
 public class GlobalExceptionHandler {
@@ -111,15 +110,6 @@ public class GlobalExceptionHandler {
                                                 "error", ex.getMessage()));
         }
 
-        
-        @ExceptionHandler(HttpMediaTypeNotSupportedException.class)
-        public ResponseEntity<?> handleAuthorizationDenied(HttpMediaTypeNotSupportedException ex) {
-                return ResponseEntity
-                                .status(HttpStatus.BAD_REQUEST)
-                                .body(Map.of(
-                                                "error", ex.getMessage()));
-        }
-        
         @ExceptionHandler(AuthorizationDeniedException.class)
         public ResponseEntity<?> handleAuthorizationDenied(AuthorizationDeniedException ex) {
                 return ResponseEntity

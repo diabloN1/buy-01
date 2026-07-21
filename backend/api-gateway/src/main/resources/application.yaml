@@ -28,6 +28,8 @@ spring:
               uri: lb://MEDIA-SERVICE
               predicates:
                 - Path=/api/media/**
+              filters:
+                - StripPrefix=1
 
 eureka:
   client:
