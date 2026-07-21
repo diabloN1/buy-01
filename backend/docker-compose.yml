@@ -14,23 +14,42 @@ services:
     depends_on:
       eureka:
         condition: service_healthy
+      mongodb:
+        condition: service_started
     ports:
       - "8081:8081"
     environment:
       JWT_SECRET: tr9+iBC8Pz/AAdHWef4hgQpuN3U7pcOtDj4hgQpuN3U7pcOtDYJl6zRyXI=
+    healthcheck:
+      test: ["CMD", "wget", "-q", "-O", "-", "http://localhost:8081/actuator/health"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
 
   product:
     build: ./product-service
     depends_on:
       eureka:
         condition: service_healthy
+      mongodb:
+        condition: service_started
     ports:
       - "8082:8082"
     environment:
       JWT_SECRET: tr9+iBC8Pz/AAdHWef4hgQpuN3U7pcOtDj4hgQpuN3U7pcOtDYJl6zRyXI=
-  
+    healthcheck:
+      test: ["CMD", "wget", "-q", "-O", "-", "http://localhost:8082/actuator/health"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+
   api-gateway:
     build: ./api-gateway
+    depends_on:
+      product:
+        condition: service_healthy
+      user:
+        condition: service_healthy
     ports:
       - "8080:8080"
     environment:
