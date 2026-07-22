@@ -21,6 +21,8 @@ import com.buy01.product.exception.custom.ForbiddenException;
 import com.buy01.product.exception.custom.NotFoundException;
 import com.buy01.product.exception.custom.UnauthorizedException;
 
+import feign.FeignException;
+
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
@@ -111,7 +113,6 @@ public class GlobalExceptionHandler {
                                                 "error", ex.getMessage()));
         }
 
-        
         @ExceptionHandler(HttpMediaTypeNotSupportedException.class)
         public ResponseEntity<?> handleAuthorizationDenied(HttpMediaTypeNotSupportedException ex) {
                 return ResponseEntity
@@ -119,7 +120,7 @@ public class GlobalExceptionHandler {
                                 .body(Map.of(
                                                 "error", ex.getMessage()));
         }
-        
+
         @ExceptionHandler(AuthorizationDeniedException.class)
         public ResponseEntity<?> handleAuthorizationDenied(AuthorizationDeniedException ex) {
                 return ResponseEntity
@@ -135,6 +136,17 @@ public class GlobalExceptionHandler {
                                 .body(Map.of(
                                                 "error",
                                                 "The resource was modified by another user. Please refresh and try again."));
+        }
+
+        @ExceptionHandler(FeignException.class)
+        public ResponseEntity<?> handleFeignException(FeignException ex) {
+
+                return ResponseEntity
+                                .status(ex.status() > 0
+                                                ? ex.status()
+                                                : HttpStatus.BAD_GATEWAY.value())
+                                .body(Map.of(
+                                                "error", ex.getMessage()));
         }
 
         // Catch All

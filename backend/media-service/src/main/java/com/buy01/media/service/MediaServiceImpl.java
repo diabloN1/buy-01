@@ -130,8 +130,7 @@ public class MediaServiceImpl implements MediaService {
     }
 
     private String getExtension(String filename) {
-        if (filename == null ||
-                !filename.contains(".")) {
+        if (filename == null || !filename.contains(".")) {
             return "";
         }
 
