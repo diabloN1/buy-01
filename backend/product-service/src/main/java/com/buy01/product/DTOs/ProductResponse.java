@@ -2,6 +2,7 @@ package com.buy01.product.DTOs;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.List;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -19,6 +20,8 @@ public class ProductResponse {
     private String name;
 
     private String description;
+
+    private List<String> imageUrls;
 
     private BigDecimal price;
 

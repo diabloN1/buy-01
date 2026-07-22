@@ -50,7 +50,7 @@ public class ProductServiceImpl implements ProductService {
 
         for (MultipartFile image : images) {
             MediaResponse media = mediaClient.upload(image, saved.getId());
-            imageIds.add(media.id());
+            imageIds.add("http://localhost:8080/api/media/images/" + media.id());
         }
 
         saved.setImageIds(imageIds);
@@ -115,6 +115,7 @@ public class ProductServiceImpl implements ProductService {
                 product.getId(),
                 product.getName(),
                 product.getDescription(),
+                product.getImageIds(),
                 product.getPrice(),
                 product.getUserId(),
                 product.getQuantity(),
