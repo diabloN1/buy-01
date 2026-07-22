@@ -20,6 +20,8 @@ public class ProductMediaService {
 
     public List<String> uploadImages(List<MultipartFile> images, String productId) {
 
+        // Could be removed since we already validat the image existance in the
+        // controller using the exception handler "MissingServletRequestPartException"
         if (images == null || images.isEmpty()) {
             throw new BadRequestException("At least one image is required.");
         }

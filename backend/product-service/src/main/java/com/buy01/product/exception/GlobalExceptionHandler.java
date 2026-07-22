@@ -20,6 +20,7 @@ import com.buy01.product.exception.custom.ConflictException;
 import com.buy01.product.exception.custom.ForbiddenException;
 import com.buy01.product.exception.custom.NotFoundException;
 import com.buy01.product.exception.custom.UnauthorizedException;
+import org.springframework.web.multipart.support.MissingServletRequestPartException;
 
 import feign.FeignException;
 
@@ -159,6 +160,16 @@ public class GlobalExceptionHandler {
                                                 "error", ex.getMessage()));
         }
 
+        @ExceptionHandler(MissingServletRequestPartException.class)
+        public ResponseEntity<?> handleMissingRequestPart(
+                        MissingServletRequestPartException ex) {
+
+                return ResponseEntity
+                                .status(HttpStatus.BAD_REQUEST)
+                                .body(Map.of(
+                                                "error", ex.getRequestPartName() + " is required."));
+        }
+
         // Catch All
         @ExceptionHandler(Exception.class)
         public ResponseEntity<?> handleGenericException(Exception ex) {
@@ -170,4 +181,5 @@ public class GlobalExceptionHandler {
                                 .body(Map.of(
                                                 "error", "Internal Server Error"));
         }
+
 }
