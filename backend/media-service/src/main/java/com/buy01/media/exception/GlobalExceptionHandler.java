@@ -13,7 +13,7 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.servlet.resource.NoResourceFoundException;
-
+import org.springframework.web.multipart.MaxUploadSizeExceededException;
 import com.buy01.media.exception.custom.BadRequestException;
 import com.buy01.media.exception.custom.ConflictException;
 import com.buy01.media.exception.custom.ForbiddenException;
@@ -75,6 +75,16 @@ public class GlobalExceptionHandler {
                                                 "details", ex.getMostSpecificCause() != null
                                                                 ? ex.getMostSpecificCause().getMessage()
                                                                 : ex.getMessage()));
+        }
+
+        @ExceptionHandler(MaxUploadSizeExceededException.class)
+        public ResponseEntity<?> handleMaxUploadSizeExceeded(
+                        MaxUploadSizeExceededException ex) {
+
+                return ResponseEntity
+                                .status(HttpStatus.BAD_REQUEST)
+                                .body(Map.of(
+                                                "error", "Maximum file size is 2 MB."));
         }
 
         @ExceptionHandler(NoResourceFoundException.class)

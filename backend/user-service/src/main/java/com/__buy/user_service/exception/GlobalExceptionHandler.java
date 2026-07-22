@@ -1,6 +1,7 @@
 package com.__buy.user_service.exception;
 
 import java.time.LocalDateTime;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 import org.springframework.dao.OptimisticLockingFailureException;
@@ -9,6 +10,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.multipart.MaxUploadSizeExceededException;
 
 import com.__buy.user_service.dto.ErrorResponse;
 
@@ -58,6 +60,13 @@ public class GlobalExceptionHandler {
         log.error("Unhandled exception occurred", ex);
 
         return buildErrorResponse(HttpStatus.INTERNAL_SERVER_ERROR, "An unexpected internal error occurred.");
+    }
+
+    @ExceptionHandler(MaxUploadSizeExceededException.class)
+    public ResponseEntity<?> handleMaxUploadSizeExceeded(
+            MaxUploadSizeExceededException ex) {
+
+        return buildErrorResponse(HttpStatus.BAD_REQUEST, "Maximum file size is 2 MB.");
     }
 
     private ResponseEntity<ErrorResponse> buildErrorResponse(HttpStatus status, String message) {
