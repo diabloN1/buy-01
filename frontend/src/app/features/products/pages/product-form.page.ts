@@ -21,6 +21,7 @@ import { NotificationService } from "@core/services/notification.service";
 import { FieldErrorComponent } from "@shared/components/field-error.component";
 import { FileDropDirective } from "@shared/directives/file-drop.directive";
 import { LoadingSpinnerComponent } from "@shared/components/loading-spinner.component";
+import { ProductImage } from "@core/models/product.model";
 
 const MAX_SIZE = 2 * 1024 * 1024;
 
@@ -49,103 +50,97 @@ const MAX_SIZE = 2 * 1024 * 1024;
         <h1>{{ id() ? "Edit product" : "New product" }}</h1>
 
         @if (loading()) {
-          <app-loading-spinner />
+        <app-loading-spinner />
         } @else {
-          <form [formGroup]="form" (ngSubmit)="submit()" class="stack">
-            <mat-form-field appearance="outline"
-              ><mat-label>Name</mat-label>
-              <input matInput formControlName="name"
+        <form [formGroup]="form" (ngSubmit)="submit()" class="stack">
+          <mat-form-field appearance="outline"
+            ><mat-label>Name</mat-label> <input matInput formControlName="name"
+          /></mat-form-field>
+          <app-field-error [control]="form.controls.name" />
+
+          <mat-form-field appearance="outline"
+            ><mat-label>Description</mat-label>
+            <textarea
+              matInput
+              rows="4"
+              formControlName="description"
+            ></textarea>
+          </mat-form-field>
+          <app-field-error [control]="form.controls.description" />
+
+          <div class="row">
+            <mat-form-field appearance="outline" class="grow"
+              ><mat-label>Price</mat-label>
+              <input matInput type="number" step="0.01" formControlName="price"
             /></mat-form-field>
-            <app-field-error [control]="form.controls.name" />
+            <mat-form-field appearance="outline" class="grow"
+              ><mat-label>Quantity</mat-label>
+              <input matInput type="number" formControlName="quantity"
+            /></mat-form-field>
+          </div>
+          <app-field-error [control]="form.controls.price" />
+          <app-field-error [control]="form.controls.quantity" />
 
-            <mat-form-field appearance="outline"
-              ><mat-label>Description</mat-label>
-              <textarea
-                matInput
-                rows="4"
-                formControlName="description"
-              ></textarea>
-            </mat-form-field>
-            <app-field-error [control]="form.controls.description" />
-
-            <div class="row">
-              <mat-form-field appearance="outline" class="grow"
-                ><mat-label>Price</mat-label>
-                <input
-                  matInput
-                  type="number"
-                  step="0.01"
-                  formControlName="price"
-              /></mat-form-field>
-              <mat-form-field appearance="outline" class="grow"
-                ><mat-label>Quantity</mat-label>
-                <input matInput type="number" formControlName="quantity"
-              /></mat-form-field>
-            </div>
-            <app-field-error [control]="form.controls.price" />
-            <app-field-error [control]="form.controls.quantity" />
-
-            <label
-              class="drop app-card"
-              appFileDrop
-              (filesDropped)="onFiles($event)"
-            >
-              <input
-                type="file"
-                hidden
-                multiple
-                accept="image/*"
-                #f
-                (change)="onFiles(f.files!)"
-              />
-              <mat-icon>cloud_upload</mat-icon>
-              <div>
-                Drag & drop images here, or
-                <button
-                  type="button"
-                  mat-button
-                  color="primary"
-                  (click)="f.click()"
-                >
-                  browse
-                </button>
-              </div>
-              <small class="muted">image/* up to 2 MB each</small>
-            </label>
-
-            @if (uploading()) {
-              <div class="muted">Uploading… {{ progress() }}%</div>
-            }
-            @if (images().length) {
-              <div class="thumbs">
-                @for (url of images(); track url) {
-                  <div class="thumb">
-                    <img [src]="url" alt="" />
-                    <button
-                      mat-icon-button
-                      type="button"
-                      (click)="removeImage(url)"
-                      aria-label="Remove"
-                    >
-                      <mat-icon>close</mat-icon>
-                    </button>
-                  </div>
-                }
-              </div>
-            }
-
-            <div class="row">
-              <span class="grow"></span>
-              <a mat-button routerLink="/seller/products">Cancel</a>
+          <label
+            class="drop app-card"
+            appFileDrop
+            (filesDropped)="onFiles($event)"
+          >
+            <input
+              type="file"
+              hidden
+              multiple
+              accept="image/*"
+              #f
+              (change)="onFiles(f.files!)"
+            />
+            <mat-icon>cloud_upload</mat-icon>
+            <div>
+              Drag & drop images here, or
               <button
-                mat-flat-button
+                type="button"
+                mat-button
                 color="primary"
-                [disabled]="form.invalid || saving()"
+                (click)="f.click()"
               >
-                {{ saving() ? "Saving…" : "Save" }}
+                browse
               </button>
             </div>
-          </form>
+            <small class="muted">image/* up to 2 MB each</small>
+          </label>
+
+          @if (uploading()) {
+          <div class="muted">Uploading… {{ progress() }}%</div>
+          } @if (images().length) {
+          <div class="thumbs">
+            @for (image of images(); track image.url) {
+            <div class="thumb">
+              <img [src]="image.url" alt="" />
+              <button
+                mat-icon-button
+                type="button"
+                (click)="removeImage(image)"
+                aria-label="Remove"
+              >
+                <mat-icon>close</mat-icon>
+              </button>
+            </div>
+            }
+          </div>
+          }
+
+          <div class="row">
+            <span class="grow"></span>
+            <a mat-button routerLink="/seller/products">Cancel</a>
+            <button
+              mat-flat-button
+              color="primary"
+              [disabled]="form.invalid || saving()"
+            >
+              {{ saving() ? "Saving…" : "Save" }}
+            </button>
+          </div>
+        </form>
         }
       </div>
     </section>
@@ -236,8 +231,7 @@ export class ProductFormPage {
   readonly saving = signal(false);
   readonly uploading = signal(false);
   readonly progress = signal(0);
-  readonly images = signal<string[]>([]);
-  readonly selectedFiles = signal<File[]>([]);
+  readonly images = signal<ProductImage[]>([]);
 
   readonly form = this.fb.nonNullable.group({
     name: [
@@ -268,7 +262,12 @@ export class ProductFormPage {
             price: p.price,
             quantity: p.quantity,
           });
-          this.images.set(p.imageUrls ?? []);
+          this.images.set(
+            (p.imageUrls ?? []).map((url) => ({
+              url,
+              existing: true,
+            }))
+          );
           this.loading.set(false);
         },
         error: () => this.loading.set(false),
@@ -277,8 +276,6 @@ export class ProductFormPage {
   }
 
   onFiles(files: FileList) {
-    const validFiles: File[] = [];
-
     Array.from(files).forEach((file) => {
       if (!file.type.startsWith("image/")) {
         this.notify.error(`${file.name} is not an image`);
@@ -290,26 +287,43 @@ export class ProductFormPage {
         return;
       }
 
-      validFiles.push(file);
-
       const url = URL.createObjectURL(file);
-      this.images.update((images) => [...images, url]);
+      this.images.update((images) => [
+        ...images,
+        {
+          url,
+          file,
+          existing: false,
+        },
+      ]);
     });
-
-    this.selectedFiles.update((old) => [...old, ...validFiles]);
   }
 
-  removeImage(url: string) {
-    this.images.update((a) => a.filter((x) => x !== url));
+  removeImage(image: ProductImage) {
+    if (!image.existing) {
+      URL.revokeObjectURL(image.url);
+    }
+
+    this.images.update((images) => images.filter((img) => img !== image));
   }
 
   submit() {
     if (this.form.invalid) return;
+
     this.saving.set(true);
+
     const body = this.form.getRawValue();
+
+    const files = this.images()
+      .filter((image) => !image.existing)
+      .map((image) => image.file!);
+
+    console.log(this.images());
+    console.log(files);
     const req$ = this.id()
       ? this.svc.update(this.id()!, body)
-      : this.svc.create(body, this.selectedFiles());
+      : this.svc.create(body, files);
+
     req$.subscribe({
       next: () => {
         this.saving.set(false);

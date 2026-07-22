@@ -23,3 +23,9 @@ export interface Paginated<T> {
   number: number;
   size: number;
 }
+
+export interface ProductImage {
+  url: string;
+  file?: File;
+  existing: boolean;
+}
