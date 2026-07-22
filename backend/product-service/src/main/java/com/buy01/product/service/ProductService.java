@@ -19,7 +19,11 @@ public interface ProductService {
 
     Page<ProductResponse> getProductsByUser(String userId, Pageable pageable);
 
-    ProductResponse updateProduct(String id, UpdateRequest updated);
+    ProductResponse updateProduct(
+            String id,
+            UpdateRequest updated,
+            List<MultipartFile> images,
+            List<String> deletedImageIds);
 
     void deleteProduct(String id);
 }

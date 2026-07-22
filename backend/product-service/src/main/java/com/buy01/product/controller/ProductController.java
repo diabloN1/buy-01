@@ -47,9 +47,17 @@ public class ProductController {
     }
 
     @PreAuthorize("hasRole('ADMIN') or hasRole('SELLER')")
-    @PutMapping("/{id}")
-    public ProductResponse updateProduct(@PathVariable String id, @Valid @RequestBody UpdateRequest req) {
-        return productService.updateProduct(id, req);
+    @PutMapping(value = "/{id}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ProductResponse updateProduct(
+            @PathVariable String id,
+            @RequestPart("product") @Valid UpdateRequest req,
+            @RequestPart(value = "images", required = false) List<MultipartFile> images,
+            @RequestParam(value = "deletedImageIds", required = false) List<String> deletedImageIds) {
+        return productService.updateProduct(
+                id,
+                req,
+                images,
+                deletedImageIds);
     }
 
     @PreAuthorize("hasRole('ADMIN') or hasRole('SELLER')")

@@ -5,7 +5,7 @@ export interface Product {
   price: number;
   quantity: number;
   userId: string;
-  imageUrls: string[];
+  images: ProductImage[];
   createdAt?: string;
 }
 
@@ -25,6 +25,7 @@ export interface Paginated<T> {
 }
 
 export interface ProductImage {
+  id?: string;
   url: string;
   file?: File;
   existing: boolean;

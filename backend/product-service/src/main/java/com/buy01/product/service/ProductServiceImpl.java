@@ -16,6 +16,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Pageable;
 
 import com.buy01.product.DTOs.CreateRequest;
+import com.buy01.product.DTOs.ProductImageResponse;
 import com.buy01.product.DTOs.UpdateRequest;
 import com.buy01.product.DTOs.ProductResponse;
 import com.buy01.product.entity.Product;
@@ -80,12 +81,17 @@ public class ProductServiceImpl implements ProductService {
     }
 
     @Override
-    public ProductResponse updateProduct(String id, UpdateRequest updated) {
+    public ProductResponse updateProduct(
+            String id,
+            UpdateRequest updated,
+            List<MultipartFile> images,
+            List<String> deletedImageIds) {
+
         Product product = findProductEntityById(id);
 
         if (!isCurrentOwnerOrAdmin(product.getUserId())) {
-            log.warn("User {} attempted to update product {} without permissions", getCurrentUUID(), id);
-            throw new ForbiddenException("Sorry! You are not the owner of this product");
+            throw new ForbiddenException(
+                    "Sorry! You are not the owner of this product");
         }
 
         product.setName(updated.name());
@@ -93,8 +99,31 @@ public class ProductServiceImpl implements ProductService {
         product.setPrice(updated.price());
         product.setQuantity(updated.quantity());
 
-        log.info("Product {} updated successfully", id);
-        return mapToResponse(productRepository.save(product));
+        if (product.getImageIds() == null) {
+            product.setImageIds(new ArrayList<>());
+        }
+
+        if (deletedImageIds != null && !deletedImageIds.isEmpty()) {
+
+            product.getImageIds()
+                    .removeAll(deletedImageIds);
+
+            productMediaService.deleteImages(
+                    deletedImageIds);
+        }
+
+        if (images != null && !images.isEmpty()) {
+
+            List<String> newImages = productMediaService.uploadImages(
+                    images,
+                    product.getId());
+
+            product.getImageIds()
+                    .addAll(newImages);
+        }
+
+        return mapToResponse(
+                productRepository.save(product));
     }
 
     @Override
@@ -116,15 +145,19 @@ public class ProductServiceImpl implements ProductService {
     }
 
     private ProductResponse mapToResponse(Product product) {
-        List<String> imageUrls = product.getImageIds()
+
+        List<ProductImageResponse> images = product.getImageIds()
                 .stream()
-                .map(imageId -> mediaBaseUrl + "/" + imageId)
+                .map(imageId -> new ProductImageResponse(
+                        imageId,
+                        mediaBaseUrl + "/" + imageId))
                 .toList();
+
         return new ProductResponse(
                 product.getId(),
                 product.getName(),
                 product.getDescription(),
-                imageUrls,
+                images,
                 product.getPrice(),
                 product.getUserId(),
                 product.getQuantity(),

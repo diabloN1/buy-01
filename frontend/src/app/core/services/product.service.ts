@@ -27,7 +27,7 @@ export class ProductService {
       "product",
       new Blob([JSON.stringify(body)], {
         type: "application/json",
-      }),
+      })
     );
 
     images.forEach((file) => {
@@ -37,8 +37,30 @@ export class ProductService {
     return this.http.post<Product>(API.base + API.products.root, formData);
   }
 
-  update(id: string, body: ProductUpsert): Observable<Product> {
-    return this.http.put<Product>(API.base + API.products.byId(id), body);
+  update(
+    id: string,
+    body: ProductUpsert,
+    images: File[],
+    deletedImageIds: string[]
+  ): Observable<Product> {
+    const formData = new FormData();
+
+    formData.append(
+      "product",
+      new Blob([JSON.stringify(body)], {
+        type: "application/json",
+      })
+    );
+
+    images.forEach((image) => {
+      formData.append("images", image);
+    });
+
+    deletedImageIds.forEach((id) => {
+      formData.append("deletedImageIds", id);
+    });
+
+    return this.http.put<Product>(API.base + API.products.byId(id), formData);
   }
 
   delete(id: string): Observable<void> {

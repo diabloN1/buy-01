@@ -141,7 +141,7 @@ export class SellerDashboardPage {
     return this.items().filter((p) => p.userId === uid);
   });
   readonly totalImages = computed(() =>
-    this.mine().reduce((n, p) => n + (p.imageUrls ? p.imageUrls.length : 0), 0)
+    this.mine().reduce((n, p) => n + p.images.length, 0)
   );
   readonly latest = computed(() => this.mine()[0]);
 

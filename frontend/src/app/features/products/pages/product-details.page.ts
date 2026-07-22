@@ -40,16 +40,16 @@ import { SafeUrlPipe } from "@shared/pipes/safe-url.pipe";
           @if (activeImage(); as img) {
           <img [src]="img | safeUrl" [alt]="p.name" /> } @else {
           <div class="ph"><mat-icon>image</mat-icon></div>
-          } @if (p.imageUrls) {
+          } @if (p.images.length) {
           <div class="thumbs">
-            @for (u of p.imageUrls; track u) {
+            @for (image of p.images; track image.id) {
             <button
               type="button"
               class="thumb"
               (click)="active.set($index)"
               [class.on]="active() === $index"
             >
-              <img [src]="u | safeUrl" alt="" />
+              <img [src]="image.url | safeUrl" alt="" />
             </button>
             }
           </div>
@@ -60,7 +60,10 @@ import { SafeUrlPipe } from "@shared/pipes/safe-url.pipe";
           <div class="price">{{ p.price | currency }}</div>
           <p class="description">{{ p.description }}</p>
           <div class="stock-tag">
-            <mat-icon style="font-size: 18px; width: 18px; height: 18px; margin-right: 4px;">inventory_2</mat-icon>
+            <mat-icon
+              style="font-size: 18px; width: 18px; height: 18px; margin-right: 4px;"
+              >inventory_2</mat-icon
+            >
             In stock: {{ p.quantity }}
           </div>
           @if (ownedByMe()) {
@@ -109,7 +112,13 @@ import { SafeUrlPipe } from "@shared/pipes/safe-url.pipe";
         background: var(--app-bg);
         border-radius: var(--app-radius);
       }
-      .ph mat-icon { font-size: 48px; width: 48px; height: 48px; color: var(--app-muted); opacity: 0.5; }
+      .ph mat-icon {
+        font-size: 48px;
+        width: 48px;
+        height: 48px;
+        color: var(--app-muted);
+        opacity: 0.5;
+      }
       .thumbs {
         display: flex;
         gap: 10px;
@@ -186,7 +195,7 @@ export class ProductDetailsPage {
   );
   readonly active = signal(0);
   readonly activeImage = computed(
-    () => this.product()?.imageUrls?.[this.active()] ?? null
+    () => this.product()?.images?.[this.active()]?.url ?? null
   );
   readonly ownedByMe = computed(() => {
     const p = this.product();

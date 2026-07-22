@@ -232,6 +232,7 @@ export class ProductFormPage {
   readonly uploading = signal(false);
   readonly progress = signal(0);
   readonly images = signal<ProductImage[]>([]);
+  readonly deletedImageIds = signal<string[]>([]);
 
   readonly form = this.fb.nonNullable.group({
     name: [
@@ -263,8 +264,9 @@ export class ProductFormPage {
             quantity: p.quantity,
           });
           this.images.set(
-            (p.imageUrls ?? []).map((url) => ({
-              url,
+            (p.images ?? []).map((image) => ({
+              id: image.id,
+              url: image.url,
               existing: true,
             }))
           );
@@ -300,7 +302,9 @@ export class ProductFormPage {
   }
 
   removeImage(image: ProductImage) {
-    if (!image.existing) {
+    if (image.existing && image.id) {
+      this.deletedImageIds.update((ids) => [...ids, image.id!]);
+    } else {
       URL.revokeObjectURL(image.url);
     }
 
@@ -319,9 +323,10 @@ export class ProductFormPage {
       .map((image) => image.file!);
 
     console.log(this.images());
+    console.log(this.deletedImageIds());
     console.log(files);
     const req$ = this.id()
-      ? this.svc.update(this.id()!, body)
+      ? this.svc.update(this.id()!, body, files, this.deletedImageIds())
       : this.svc.create(body, files);
 
     req$.subscribe({

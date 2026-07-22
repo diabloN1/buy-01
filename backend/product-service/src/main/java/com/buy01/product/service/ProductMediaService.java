@@ -40,4 +40,13 @@ public class ProductMediaService {
 
         return imageIds;
     }
+
+    public void deleteImages(List<String> imageIds) {
+
+        if (imageIds == null || imageIds.isEmpty()) {
+            return;
+        }
+
+        imageIds.forEach(mediaClient::delete);
+    }
 }
