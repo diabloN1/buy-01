@@ -12,6 +12,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.buy01.media.entity.Media;
+import com.buy01.media.exception.custom.BadRequestException;
+import com.buy01.media.exception.custom.NotFoundException;
 import com.buy01.media.repository.MediaRepository;
 
 import lombok.RequiredArgsConstructor;
@@ -40,7 +42,7 @@ public class MediaServiceImpl implements MediaService {
 
         return mediaRepository.findById(id)
                 .orElseThrow(
-                        () -> new RuntimeException("Image not found"));
+                        () -> new NotFoundException("Image not found"));
     }
 
     @Override
@@ -75,7 +77,7 @@ public class MediaServiceImpl implements MediaService {
     public Resource download(String id) {
         Media media = mediaRepository.findById(id)
                 .orElseThrow(
-                        () -> new RuntimeException("Image not found"));
+                        () -> new NotFoundException("Image not found"));
 
         ResponseInputStream<GetObjectResponse> stream = s3Client.getObject(
                 GetObjectRequest.builder()
@@ -90,7 +92,7 @@ public class MediaServiceImpl implements MediaService {
     public void delete(String id) {
         Media media = mediaRepository.findById(id)
                 .orElseThrow(
-                        () -> new RuntimeException("Image not found"));
+                        () -> new NotFoundException("Image not found"));
 
         s3Client.deleteObject(
                 DeleteObjectRequest.builder()
@@ -103,12 +105,12 @@ public class MediaServiceImpl implements MediaService {
 
     private void validate(MultipartFile file) throws IOException {
         if (file.isEmpty()) {
-            throw new IllegalArgumentException(
+            throw new BadRequestException(
                     "File is empty.");
         }
 
         if (file.getSize() > MAX_FILE_SIZE) {
-            throw new IllegalArgumentException(
+            throw new BadRequestException(
                     "Maximum size is 2 MB.");
         }
 
@@ -116,13 +118,13 @@ public class MediaServiceImpl implements MediaService {
         if (contentType == null ||
                 !contentType.startsWith("image/")) {
 
-            throw new IllegalArgumentException(
+            throw new BadRequestException(
                     "Only images are allowed.");
         }
 
         BufferedImage image = ImageIO.read(file.getInputStream());
         if (image == null) {
-            throw new IllegalArgumentException(
+            throw new BadRequestException(
                     "Invalid image.");
         }
     }
