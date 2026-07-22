@@ -121,7 +121,6 @@ public class GlobalExceptionHandler {
                                                 "error", ex.getMessage()));
         }
 
-
         @ExceptionHandler(MaxUploadSizeExceededException.class)
         public ResponseEntity<?> handleMaxUploadSizeExceeded(
                         MaxUploadSizeExceededException ex) {

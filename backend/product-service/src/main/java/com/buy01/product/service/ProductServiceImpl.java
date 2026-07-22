@@ -3,6 +3,7 @@ package com.buy01.product.service;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -15,9 +16,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Pageable;
 
 import com.buy01.product.DTOs.CreateRequest;
-import com.buy01.product.DTOs.MediaResponse;
 import com.buy01.product.DTOs.UpdateRequest;
-import com.buy01.product.client.MediaClient;
 import com.buy01.product.DTOs.ProductResponse;
 import com.buy01.product.entity.Product;
 import com.buy01.product.exception.custom.ForbiddenException;
@@ -29,11 +28,15 @@ import com.buy01.product.repository.ProductRepository;
 @RequiredArgsConstructor
 public class ProductServiceImpl implements ProductService {
 
+    @Value("${media.base-url}")
+    private String mediaBaseUrl;
+
+    private final ProductMediaService productMediaService;
     private final ProductRepository productRepository;
-    private final MediaClient mediaClient;
 
     @Override
     public ProductResponse createProduct(CreateRequest req, List<MultipartFile> images) {
+
         String currentUserId = getCurrentUUID();
 
         Product product = Product.builder()
@@ -46,17 +49,19 @@ public class ProductServiceImpl implements ProductService {
                 .build();
 
         Product saved = productRepository.save(product);
-        List<String> imageIds = new ArrayList<>();
 
-        for (MultipartFile image : images) {
-            MediaResponse media = mediaClient.upload(image, saved.getId());
-            imageIds.add("http://localhost:8080/api/media/images/" + media.id());
+        try {
+
+            saved.setImageIds(productMediaService.uploadImages(images, saved.getId()));
+
+            saved = productRepository.save(saved);
+
+            return mapToResponse(saved);
+
+        } catch (Exception ex) {
+            productRepository.deleteById(saved.getId());
+            throw ex;
         }
-
-        saved.setImageIds(imageIds);
-        saved = productRepository.save(saved);
-
-        return mapToResponse(saved);
     }
 
     @Override
@@ -111,11 +116,15 @@ public class ProductServiceImpl implements ProductService {
     }
 
     private ProductResponse mapToResponse(Product product) {
+        List<String> imageUrls = product.getImageIds()
+                .stream()
+                .map(imageId -> mediaBaseUrl + "/" + imageId)
+                .toList();
         return new ProductResponse(
                 product.getId(),
                 product.getName(),
                 product.getDescription(),
-                product.getImageIds(),
+                imageUrls,
                 product.getPrice(),
                 product.getUserId(),
                 product.getQuantity(),
