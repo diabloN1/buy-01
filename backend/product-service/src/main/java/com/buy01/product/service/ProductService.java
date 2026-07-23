@@ -26,4 +26,6 @@ public interface ProductService {
             List<String> deletedImageIds);
 
     void deleteProduct(String id);
+
+    long countProducts();
 }

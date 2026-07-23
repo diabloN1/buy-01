@@ -16,13 +16,7 @@ export interface ProductUpsert {
   quantity: number;
 }
 
-export interface Paginated<T> {
-  content: T[];
-  totalElements: number;
-  totalPages: number;
-  number: number;
-  size: number;
-}
+
 
 export interface ProductImage {
   id?: string;

@@ -13,6 +13,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+
 import org.springframework.data.domain.Pageable;
 
 import com.buy01.product.DTOs.CreateRequest;
@@ -130,6 +131,10 @@ public class ProductServiceImpl implements ProductService {
     public void deleteProduct(String id) {
         Product product = findProductEntityById(id);
 
+        System.out.println("Owner: " + product.getUserId());
+        System.out.println("Current: " + getCurrentUUID());
+        System.out.println("Role: " + getCurrentRole());
+
         if (!isCurrentOwnerOrAdmin(product.getUserId())) {
             log.warn("User {} attempted to delete product {} without permissions", getCurrentUUID(), id);
             throw new ForbiddenException("Sorry! You are not the owner of this product");
@@ -167,7 +172,9 @@ public class ProductServiceImpl implements ProductService {
     private boolean isCurrentOwnerOrAdmin(String ownerId) {
         String currentUserId = getCurrentUUID();
         String currentRole = getCurrentRole();
-        return ownerId.equals(currentUserId) || "ROLE_ADMIN".equals(currentRole);
+
+        return ownerId.equals(currentUserId)
+                || "ADMIN".equals(currentRole);
     }
 
     private String getCurrentUUID() {
@@ -183,9 +190,15 @@ public class ProductServiceImpl implements ProductService {
                 .getAuthentication()
                 .getAuthorities()
                 .stream()
+                .peek(a -> System.out.println("Authority = " + a.getAuthority()))
                 .findFirst()
                 .map(GrantedAuthority::getAuthority)
                 .map(role -> role.replaceFirst("^ROLE_", ""))
                 .orElse(null);
+    }
+
+    @Override
+    public long countProducts() {
+        return productRepository.count();
     }
 }

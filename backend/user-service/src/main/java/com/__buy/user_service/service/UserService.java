@@ -19,4 +19,6 @@ public interface UserService {
     UserResponse getCurrentUser(String email);
 
     void deleteUser(String id);
+
+    long countUsers();
 }

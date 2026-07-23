@@ -16,4 +16,6 @@ public interface MediaService {
     Resource download(String id);
 
     void delete(String id);
+
+    long countMedia();
 }

@@ -26,7 +26,7 @@ public class MediaController {
         private final MediaServiceImpl mediaService;
 
         @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-        @PreAuthorize("hasRole('SELLER')")
+        @PreAuthorize("hasRole('SELLER') or hasRole('ADMIN')")
         public ResponseEntity<Media> upload(
                         @RequestPart("image") MultipartFile image,
                         @RequestParam(required = false) String productId) throws IOException {
@@ -48,9 +48,15 @@ public class MediaController {
         }
 
         @DeleteMapping("/{id}")
-        @PreAuthorize("hasRole('SELLER')")
+        @PreAuthorize("hasRole('SELLER') or hasRole('ADMIN')")
         public ResponseEntity<Void> delete(@PathVariable String id) {
                 mediaService.delete(id);
                 return ResponseEntity.noContent().build();
+        }
+
+        @GetMapping("/count")
+        @PreAuthorize("hasRole('SELLER') or hasRole('ADMIN')")
+        public ResponseEntity<Long> countMedia() {
+                return ResponseEntity.ok(mediaService.countMedia());
         }
 }

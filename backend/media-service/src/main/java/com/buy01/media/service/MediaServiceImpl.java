@@ -146,4 +146,9 @@ public class MediaServiceImpl implements MediaService {
                 return filename.substring(
                                 filename.lastIndexOf('.'));
         }
+
+        @Override
+        public long countMedia() {
+                return mediaRepository.count();
+        }
 }

@@ -38,13 +38,27 @@ import { ThemeService } from "../services/theme.service";
           >Products</a
         >
         @if (auth.isSeller()) {
-        <a mat-button routerLink="/dashboard" routerLinkActive="active"
-          >Dashboard</a
-        >
-        <a mat-button routerLink="/seller/products" routerLinkActive="active"
-          >My Products</a
-        >
-        <a mat-button routerLink="/media" routerLinkActive="active">Media</a>
+        <a mat-button routerLink="/dashboard" routerLinkActive="active">
+          Dashboard
+        </a>
+
+        <a mat-button routerLink="/seller/products" routerLinkActive="active">
+          My Products
+        </a>
+
+        <a mat-button routerLink="/media" routerLinkActive="active"> Media </a>
+        } @if (auth.isAdmin()) {
+        <a mat-button routerLink="/admin/dashboard" routerLinkActive="active">
+          Dashboard
+        </a>
+
+        <a mat-button routerLink="/admin/products" routerLinkActive="active">
+          Products
+        </a>
+
+        <a mat-button routerLink="/admin/users" routerLinkActive="active">
+          Users
+        </a>
         }
       </nav>
       <span class="grow"></span>

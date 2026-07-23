@@ -2,7 +2,8 @@ import { Injectable, inject } from "@angular/core";
 import { HttpClient, HttpParams } from "@angular/common/http";
 import { Observable } from "rxjs";
 import { API } from "../config/api.config";
-import { Paginated, Product, ProductUpsert } from "../models/product.model";
+import { Product, ProductUpsert } from "../models/product.model";
+import { Paginated } from "@core/models/paginated.model";
 
 @Injectable({ providedIn: "root" })
 export class ProductService {
@@ -65,5 +66,9 @@ export class ProductService {
 
   delete(id: string): Observable<void> {
     return this.http.delete<void>(API.base + API.products.byId(id));
+  }
+
+  count(): Observable<number> {
+    return this.http.get<number>(API.base + API.products.count);
   }
 }

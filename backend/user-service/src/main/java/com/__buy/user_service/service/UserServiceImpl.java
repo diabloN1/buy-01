@@ -96,4 +96,9 @@ public class UserServiceImpl implements UserService {
                 .createdAt(user.getCreatedAt())
                 .build();
     }
+
+    @Override
+    public long countUsers() {
+        return userRepo.count();
+    }
 }

@@ -45,6 +45,36 @@ export const APP_ROUTES: Routes = [
       ).then((m) => m.SellerDashboardPage),
   },
   {
+    path: "admin/dashboard",
+    canActivate: [authGuard, roleGuard(["ADMIN"])],
+    loadComponent: () =>
+      import("./features/dashboard/admin-dashboard/admin-dashboard.page").then(
+        (m) => m.AdminDashboardPage
+      ),
+  },
+  {
+    path: "admin/products",
+    canActivate: [authGuard, roleGuard(["ADMIN"])],
+    loadComponent: () =>
+      import("./features/admin/admin-products.page").then(
+        (m) => m.AdminProductsPage
+      ),
+  },
+  {
+    path: "admin/products/:id/edit",
+    canActivate: [authGuard, roleGuard(["ADMIN"])],
+    loadComponent: () =>
+      import("./features/products/pages/product-form.page").then(
+        (m) => m.ProductFormPage
+      ),
+  },
+  {
+    path: "admin/users",
+    canActivate: [authGuard, roleGuard(["ADMIN"])],
+    loadComponent: () =>
+      import("./features/admin/admin-users.page").then((m) => m.AdminUsersPage),
+  },
+  {
     path: "seller/products",
     canActivate: [authGuard, roleGuard(["SELLER"])],
     loadComponent: () =>
@@ -62,7 +92,7 @@ export const APP_ROUTES: Routes = [
   },
   {
     path: "seller/products/:id/edit",
-    canActivate: [authGuard, roleGuard(["SELLER"])],
+    canActivate: [authGuard, roleGuard(["SELLER", "ADMIN"])],
     loadComponent: () =>
       import("./features/products/pages/product-form.page").then(
         (m) => m.ProductFormPage

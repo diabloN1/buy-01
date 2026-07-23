@@ -78,4 +78,10 @@ public class UserController {
         return ResponseEntity.noContent().build();
     }
 
+    @GetMapping("/count")
+    @PreAuthorize("hasRole('ADMIN')")
+    public long countUsers() {
+        return userService.countUsers();
+    }
+
 }

@@ -51,9 +51,7 @@ import { LoadingSpinnerComponent } from "@shared/components/loading-spinner.comp
         <a mat-flat-button color="primary" routerLink="/seller/products/new"
           ><mat-icon>add</mat-icon> New product</a
         >
-        <a mat-stroked-button routerLink="/media"
-          ><mat-icon>image</mat-icon> Manage media</a
-        >
+
         <a mat-stroked-button routerLink="/seller/products"
           ><mat-icon>inventory_2</mat-icon> My products</a
         >

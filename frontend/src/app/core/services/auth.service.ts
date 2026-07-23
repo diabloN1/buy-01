@@ -32,6 +32,7 @@ export class AuthService {
   });
   readonly role = computed<UserRole | null>(() => this._user()?.role ?? null);
   readonly isSeller = computed(() => this.role() === "SELLER");
+  readonly isAdmin = computed(() => this.role() === "ADMIN");
 
   private expiryTimer: ReturnType<typeof setTimeout> | null = null;
 

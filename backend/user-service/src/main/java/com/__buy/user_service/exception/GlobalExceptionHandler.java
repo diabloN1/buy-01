@@ -1,7 +1,6 @@
 package com.__buy.user_service.exception;
 
 import java.time.LocalDateTime;
-import java.util.Map;
 import java.util.stream.Collectors;
 
 import org.springframework.dao.OptimisticLockingFailureException;

@@ -13,7 +13,7 @@ import org.springframework.web.multipart.MultipartFile;
 import com.buy01.product.DTOs.CreateRequest;
 import com.buy01.product.DTOs.ProductResponse;
 import com.buy01.product.DTOs.UpdateRequest;
-import com.buy01.product.service.ProductServiceImpl;
+import com.buy01.product.service.ProductService;
 
 import jakarta.annotation.security.PermitAll;
 import jakarta.validation.Valid;
@@ -24,7 +24,7 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class ProductController {
 
-    private final ProductServiceImpl productService;
+    private final ProductService productService;
 
     @PermitAll
     @GetMapping
@@ -65,5 +65,11 @@ public class ProductController {
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void deleteProduct(@PathVariable String id) {
         productService.deleteProduct(id);
+    }
+
+    @GetMapping("/count")
+    @PreAuthorize("hasRole('ADMIN') or hasRole('SELER')")
+    public long countProducts() {
+        return productService.countProducts();
     }
 }
