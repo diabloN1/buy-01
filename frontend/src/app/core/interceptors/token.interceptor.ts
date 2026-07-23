@@ -28,6 +28,7 @@ export const tokenInterceptor: HttpInterceptorFn = (req, next) => {
 
   return next(request).pipe(
     catchError((error: HttpErrorResponse) => {
+      console.log("TOKEN INTERCEPTOR:", req.url, error.status);
       if (error.status !== 401 || authRequest) {
         return throwError(() => error);
       }
