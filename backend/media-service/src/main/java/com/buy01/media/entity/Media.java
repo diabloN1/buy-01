@@ -23,6 +23,8 @@ public class Media {
 
     private String productId;
 
+    private String userId;
+
     private String contentType;
 
     @CreatedDate

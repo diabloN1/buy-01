@@ -1,3 +1,2 @@
-[ ] - Send user data with getProduct
-
-[ ] - use kafka for communication from product-service (deleteProduct) to media-service (deleteImage) PRODUCT_DELETED (avatar too)
+[X] - (media service) - is owner or admin on delete
+[ ] - kafka delete profile image (media service) send event to profile to remove avatarid

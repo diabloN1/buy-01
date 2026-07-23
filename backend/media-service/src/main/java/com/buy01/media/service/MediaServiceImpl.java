@@ -7,12 +7,15 @@ import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
 
 import org.springframework.core.io.Resource;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.core.io.InputStreamResource;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
+import org.springframework.security.oauth2.jwt.Jwt;
 
 import com.buy01.media.entity.Media;
 import com.buy01.media.exception.custom.BadRequestException;
+import com.buy01.media.exception.custom.ForbiddenException;
 import com.buy01.media.exception.custom.NotFoundException;
 import com.buy01.media.repository.MediaRepository;
 
@@ -68,6 +71,7 @@ public class MediaServiceImpl implements MediaService {
                 Media media = Media.builder()
                                 .path(objectName)
                                 .productId(productId)
+                                .userId(getCurrentUUID())
                                 .contentType(file.getContentType())
                                 .build();
 
@@ -92,9 +96,13 @@ public class MediaServiceImpl implements MediaService {
         @Override
         public void delete(String id) {
                 Media media = mediaRepository.findById(id)
-                                .orElseThrow(
-                                                () -> new NotFoundException("Image not found"));
+                                .orElseThrow(() -> new NotFoundException("Image not found"));
 
+                if (!isCurrentOwnerOrAdmin(media.getUserId())) {
+                        throw new ForbiddenException(
+                                        "Sorry! You are not the owner of this product");
+                }
+                
                 s3Client.deleteObject(
                                 DeleteObjectRequest.builder()
                                                 .bucket(bucket)
@@ -151,5 +159,26 @@ public class MediaServiceImpl implements MediaService {
         @Override
         public long countMedia() {
                 return mediaRepository.count();
+        }
+
+        private boolean isCurrentOwnerOrAdmin(String ownerId) {
+
+                String currentUserId = getCurrentUUID();
+
+                boolean isAdmin = SecurityContextHolder.getContext()
+                                .getAuthentication()
+                                .getAuthorities()
+                                .stream()
+                                .anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"));
+
+                return ownerId.equals(currentUserId) || isAdmin;
+        }
+
+        private String getCurrentUUID() {
+                Jwt jwt = (Jwt) SecurityContextHolder.getContext()
+                                .getAuthentication()
+                                .getPrincipal();
+
+                return jwt.getSubject();
         }
 }
