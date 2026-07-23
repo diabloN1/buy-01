@@ -15,11 +15,11 @@ public class UserWidgetResponse {
 
     private String name;
 
-    private UserAvatarResponse avatarId;
+    private UserAvatarResponse avatar;
 
     public UserWidgetResponse(UserResponse user) {
         this.id = user.getId();
         this.name = user.getName();
-        this.avatarId = user.getAvatar();
+        this.avatar = user.getAvatar();
     }
 }

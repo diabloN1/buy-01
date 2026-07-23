@@ -11,6 +11,7 @@ export const API = {
   users: {
     root: "/users",
     byId: (id: string) => `/users/${id}`,
+    widgetbyId: (id: string) => `/users/widget/${id}`,
     count: "/users/count",
   },
 

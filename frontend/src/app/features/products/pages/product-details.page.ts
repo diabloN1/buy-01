@@ -10,12 +10,14 @@ import { ActivatedRoute, RouterLink } from "@angular/router";
 import { MatButtonModule } from "@angular/material/button";
 import { MatIconModule } from "@angular/material/icon";
 import { toSignal } from "@angular/core/rxjs-interop";
-import { switchMap } from "rxjs";
+import { shareReplay, switchMap } from "rxjs";
 import { ProductService } from "@core/services/product.service";
 import { AuthService } from "@core/services/auth.service";
 import { Product } from "@core/models/product.model";
 import { LoadingSpinnerComponent } from "@shared/components/loading-spinner.component";
 import { SafeUrlPipe } from "@shared/pipes/safe-url.pipe";
+import { UserService } from "@core/services/user.service";
+import { UserWidget } from "@core/models/user.model";
 
 @Component({
   selector: "app-product-details",
@@ -32,52 +34,76 @@ import { SafeUrlPipe } from "@shared/pipes/safe-url.pipe";
   template: `
     <section class="container">
       @if (product(); as p) {
-      <a mat-button routerLink="/products"
-        ><mat-icon>arrow_back</mat-icon> Back</a
-      >
-      <div class="grid">
-        <div class="gallery app-card">
-          @if (activeImage(); as img) {
-          <img [src]="img | safeUrl" [alt]="p.name" /> } @else {
-          <div class="ph"><mat-icon>image</mat-icon></div>
-          } @if (p.images.length) {
-          <div class="thumbs">
-            @for (image of p.images; track image.id) {
-            <button
-              type="button"
-              class="thumb"
-              (click)="active.set($index)"
-              [class.on]="active() === $index"
-            >
-              <img [src]="image.url | safeUrl" alt="" />
-            </button>
+        <a mat-button routerLink="/products"
+          ><mat-icon>arrow_back</mat-icon> Back</a
+        >
+        <div class="grid">
+          <div class="gallery app-card">
+            @if (activeImage(); as img) {
+              <img [src]="img | safeUrl" [alt]="p.name" />
+            } @else {
+              <div class="ph"><mat-icon>image</mat-icon></div>
+            }
+            @if (p.images.length) {
+              <div class="thumbs">
+                @for (image of p.images; track image.id) {
+                  <button
+                    type="button"
+                    class="thumb"
+                    (click)="active.set($index)"
+                    [class.on]="active() === $index"
+                  >
+                    <img [src]="image.url | safeUrl" alt="" />
+                  </button>
+                }
+              </div>
             }
           </div>
-          }
-        </div>
-        <div class="info stack">
-          <h1>{{ p.name }}</h1>
-          <div class="price">{{ p.price | currency }}</div>
-          <p class="description">{{ p.description }}</p>
-          <div class="stock-tag">
-            <mat-icon
-              style="font-size: 18px; width: 18px; height: 18px; margin-right: 4px;"
-              >inventory_2</mat-icon
-            >
-            In stock: {{ p.quantity }}
+          <div class="info stack">
+            <h1>{{ p.name }}</h1>
+            <div class="price">{{ p.price | currency }}</div>
+            @if (seller(); as seller) {
+              <div class="seller">
+                @if (seller.avatar) {
+                  <img
+                    class="seller-avatar"
+                    [src]="seller.avatar.url | safeUrl"
+                    [alt]="seller.name"
+                  />
+                } @else {
+                  <div class="seller-avatar-placeholder">
+                    <mat-icon>person</mat-icon>
+                  </div>
+                }
+
+                <div class="">
+                  <span class="seller-label">Seller</span>
+                  <strong> - {{ seller.name }}</strong>
+                </div>
+              </div>
+            }
+            <p class="description">{{ p.description }}</p>
+            <div class="stock-tag">
+              <mat-icon
+                style="font-size: 18px; width: 18px; height: 18px; margin-right: 4px;"
+                >inventory_2</mat-icon
+              >
+              In stock: {{ p.quantity }}
+            </div>
+            @if (ownedByMe()) {
+              <div class="actions">
+                <a
+                  mat-stroked-button
+                  [routerLink]="['/seller/products', p.id, 'edit']"
+                  ><mat-icon>edit</mat-icon> Edit product</a
+                >
+              </div>
+            }
           </div>
-          @if (ownedByMe()) {
-          <div class="actions">
-            <a
-              mat-stroked-button
-              [routerLink]="['/seller/products', p.id, 'edit']"
-              ><mat-icon>edit</mat-icon> Edit product</a
-            >
-          </div>
-          }
         </div>
-      </div>
-      } @else { <app-loading-spinner label="Loading…" /> }
+      } @else {
+        <app-loading-spinner label="Loading…" />
+      }
     </section>
   `,
   styles: [
@@ -181,25 +207,76 @@ import { SafeUrlPipe } from "@shared/pipes/safe-url.pipe";
       .actions {
         margin-top: 24px;
       }
+      .seller {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+      }
+
+      .seller-avatar,
+      .seller-avatar-placeholder {
+        width: 48px;
+        height: 48px;
+        border-radius: 50%;
+      }
+
+      .seller-avatar {
+        object-fit: cover;
+      }
+
+      .seller-avatar-placeholder {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: var(--app-bg);
+        color: var(--app-muted);
+      }
+
+      .seller-info {
+        display: flex;
+        flex-direction: column;
+        gap: 2px;
+      }
+
+      .seller-label {
+        font-size: 12px;
+        color: var(--app-muted);
+      }
     `,
   ],
 })
 export class ProductDetailsPage {
   private readonly route = inject(ActivatedRoute);
   private readonly svc = inject(ProductService);
+  private readonly userService = inject(UserService);
   private readonly auth = inject(AuthService);
 
-  readonly product = toSignal<Product | undefined>(
-    this.route.paramMap.pipe(switchMap((p) => this.svc.get(p.get("id")!))),
-    { initialValue: undefined }
+  private readonly product$ = this.route.paramMap.pipe(
+    switchMap((params) => this.svc.get(params.get("id")!)),
+    shareReplay({ bufferSize: 1, refCount: true }),
   );
+
+  readonly product = toSignal<Product | undefined>(this.product$, {
+    initialValue: undefined,
+  });
+
+  readonly seller = toSignal<UserWidget | undefined>(
+    this.product$.pipe(
+      switchMap((product) => this.userService.getWidget(product.userId)),
+    ),
+    { initialValue: undefined },
+  );
+
   readonly active = signal(0);
+
   readonly activeImage = computed(
-    () => this.product()?.images?.[this.active()]?.url ?? null
+    () => this.product()?.images?.[this.active()]?.url ?? null,
   );
+
   readonly ownedByMe = computed(() => {
     const p = this.product();
     const u = this.auth.user();
+
     return !!p && !!u && p.userId === u.id;
   });
 }

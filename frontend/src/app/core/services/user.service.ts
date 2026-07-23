@@ -4,7 +4,7 @@ import { Observable } from "rxjs";
 
 import { API } from "@core/config/api.config";
 import { Paginated } from "@core/models/paginated.model";
-import { User } from "@core/models/user.model";
+import { User, UserWidget } from "@core/models/user.model";
 
 @Injectable({
   providedIn: "root",
@@ -22,6 +22,11 @@ export class UserService {
 
   get(id: string): Observable<User> {
     return this.http.get<User>(API.base + API.users.byId(id));
+  }
+
+
+  getWidget(id: string): Observable<UserWidget> {
+    return this.http.get<UserWidget>(API.base + API.users.widgetbyId(id));
   }
 
   delete(id: string): Observable<void> {

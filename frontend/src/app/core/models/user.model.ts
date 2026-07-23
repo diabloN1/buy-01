@@ -14,6 +14,12 @@ export interface User {
   createdAt?: string;
 }
 
+export interface UserWidget {
+  id: string;
+  name: string;
+  avatar?: UserAvatar;
+}
+
 export interface AuthResponse {
   token: string;
   user: User;
