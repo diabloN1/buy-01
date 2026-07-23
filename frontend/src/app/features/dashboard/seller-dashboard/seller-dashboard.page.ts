@@ -35,7 +35,7 @@ import { LoadingSpinnerComponent } from "@shared/components/loading-spinner.comp
       <div class="stats">
         <div class="app-card stat">
           <div class="k">Total products</div>
-          <div class="v">{{ mine().length }}</div>
+          <div class="v">{{ items().length }}</div>
         </div>
         <div class="app-card stat">
           <div class="k">Total images</div>
@@ -43,7 +43,7 @@ import { LoadingSpinnerComponent } from "@shared/components/loading-spinner.comp
         </div>
         <div class="app-card stat">
           <div class="k">Latest upload</div>
-          <div class="v small">{{ mine().length ? latest().name : "—" }}</div>
+          <div class="v small">{{ items().length ? latest().name : "—" }}</div>
         </div>
       </div>
 
@@ -60,7 +60,7 @@ import { LoadingSpinnerComponent } from "@shared/components/loading-spinner.comp
       <h2>Latest products</h2>
       @if (loading()) { <app-loading-spinner /> } @else {
       <div class="grid">
-        @for (p of mine().slice(0, 4); track p.id) {
+        @for (p of items().slice(0, 4); track p.id) {
         <app-product-card [product]="p" /> }
       </div>
       }
@@ -134,17 +134,13 @@ export class SellerDashboardPage {
   private readonly svc = inject(ProductService);
   readonly items = signal<Product[]>([]);
   readonly loading = signal(true);
-  readonly mine = computed(() => {
-    const uid = this.auth.user()?.id;
-    return this.items().filter((p) => p.userId === uid);
-  });
   readonly totalImages = computed(() =>
-    this.mine().reduce((n, p) => n + p.images.length, 0)
+    this.items().reduce((n, p) => n + p.images.length, 0)
   );
-  readonly latest = computed(() => this.mine()[0]);
+  readonly latest = computed(() => this.items()[0]);
 
   constructor() {
-    this.svc.list(1, 50).subscribe({
+    this.svc.listBySeller(1, 50, this.auth.user()!.id).subscribe({
       next: (r) => {
         this.items.set(r.content);
         this.loading.set(false);
