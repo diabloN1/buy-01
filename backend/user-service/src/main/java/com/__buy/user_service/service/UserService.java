@@ -2,6 +2,7 @@ package com.__buy.user_service.service;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.web.multipart.MultipartFile;
 
 import com.__buy.user_service.dto.CreateUserRequest;
 import com.__buy.user_service.dto.UpdateUserRequest;
@@ -21,4 +22,8 @@ public interface UserService {
     void deleteUser(String id);
 
     long countUsers();
+
+    UserResponse uploadAvatar(String userId, MultipartFile avatar);
+
+    void deleteAvatar(String userId);
 }

@@ -1,4 +1,4 @@
-package com.buy01.product.client;
+package com.__buy.user_service.client;
 
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.http.MediaType;
@@ -9,18 +9,17 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.multipart.MultipartFile;
 
-import com.buy01.product.DTOs.MediaResponse;
+import com.__buy.user_service.dto.MediaResponse;
 
 @FeignClient(name = "MEDIA-SERVICE")
 public interface MediaClient {
 
-        @PostMapping(value = "/media/images", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-        MediaResponse upload(
-                        @RequestPart("image") MultipartFile image,
-                        @RequestParam(required = false) String productId,
-                        @RequestParam(required = false) String userId);
+    @PostMapping(value = "/media/images", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    MediaResponse upload(
+            @RequestPart("image") MultipartFile image,
+            @RequestParam(required = false) String productId,
+            @RequestParam(required = false) String userId);
 
-        @DeleteMapping("/media/images/{id}")
-        void delete(@PathVariable String id);
-
+    @DeleteMapping("/media/images/{id}")
+    void delete(@PathVariable String id);
 }

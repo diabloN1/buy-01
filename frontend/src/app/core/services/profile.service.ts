@@ -7,10 +7,23 @@ import { UpdateProfileRequest, User } from "../models/user.model";
 @Injectable({ providedIn: "root" })
 export class ProfileService {
   private readonly http = inject(HttpClient);
+
   me(): Observable<User> {
     return this.http.get<User>(API.base + API.profile.me);
   }
+
   update(body: UpdateProfileRequest): Observable<User> {
     return this.http.put<User>(API.base + API.profile.me, body);
+  }
+
+  uploadAvatar(file: File): Observable<User> {
+    const formData = new FormData();
+    formData.append("image", file);
+
+    return this.http.post<User>(API.base + API.profile.avatar, formData);
+  }
+
+  deleteAvatar(): Observable<void> {
+    return this.http.delete<void>(API.base + API.profile.avatar);
   }
 }

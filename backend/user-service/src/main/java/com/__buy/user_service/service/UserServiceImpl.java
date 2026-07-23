@@ -4,6 +4,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
 import com.__buy.user_service.dto.CreateUserRequest;
 import com.__buy.user_service.dto.UpdateUserRequest;
@@ -12,6 +13,7 @@ import com.__buy.user_service.entity.Role;
 import com.__buy.user_service.entity.User;
 import com.__buy.user_service.exception.EmailAlreadyExistsException;
 import com.__buy.user_service.exception.UserNotFoundException;
+import com.__buy.user_service.mapper.UserMapper;
 import com.__buy.user_service.repository.UserRepository;
 
 import lombok.RequiredArgsConstructor;
@@ -24,6 +26,8 @@ public class UserServiceImpl implements UserService {
 
     private final UserRepository userRepo;
     private final PasswordEncoder passwordEncoder;
+    private final UserAvatarService avatarService;
+    private final UserMapper userMapper;
 
     @Override
     public UserResponse createUser(CreateUserRequest userReq) {
@@ -79,26 +83,55 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public void deleteUser(String id) {
-        if (!userRepo.existsById(id)) {
-            throw new UserNotFoundException(id);
-        }
-        userRepo.deleteById(id);
+        User user = userRepo.findById(id)
+                .orElseThrow(() -> new UserNotFoundException(id));
+        avatarService.deleteAvatar(user.getAvatarId());
+        userRepo.delete(user);
         log.info("Deleted user ID: {}", id);
     }
 
-    // Helper method to centralize mapping logic
     private UserResponse mapToResponse(User user) {
-        return UserResponse.builder()
-                .id(user.getId())
-                .name(user.getName())
-                .email(user.getEmail())
-                .role(user.getRole())
-                .createdAt(user.getCreatedAt())
-                .build();
+        return userMapper.toResponse(user);
     }
 
     @Override
     public long countUsers() {
         return userRepo.count();
+    }
+
+    @Override
+    public UserResponse uploadAvatar(String userId, MultipartFile avatar) {
+
+        User user = userRepo.findById(userId)
+                .orElseThrow(() -> new UserNotFoundException(userId));
+
+        if (user.getAvatarId() != null) {
+            avatarService.deleteAvatar(user.getAvatarId());
+        }
+
+        String avatarId = avatarService.uploadAvatar(avatar, userId);
+
+        user.setAvatarId(avatarId);
+
+        userRepo.save(user);
+
+        return mapToResponse(user);
+    }
+
+    @Override
+    public void deleteAvatar(String userId) {
+
+        User user = userRepo.findById(userId)
+                .orElseThrow(() -> new UserNotFoundException(userId));
+
+        if (user.getAvatarId() == null) {
+            return;
+        }
+
+        avatarService.deleteAvatar(user.getAvatarId());
+
+        user.setAvatarId(null);
+
+        userRepo.save(user);
     }
 }

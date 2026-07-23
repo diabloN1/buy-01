@@ -17,9 +17,15 @@ import lombok.NoArgsConstructor;
 public class UserResponse {
 
     private String id;
+
     private String name;
+
     private String email;
+
     private Role role;
+
+    private UserAvatarResponse avatar;
+
     private LocalDateTime createdAt;
 
     public UserResponse(User user) {

@@ -46,7 +46,11 @@ public class MediaServiceImpl implements MediaService {
         }
 
         @Override
-        public Media upload(MultipartFile file, String productId) throws IOException {
+        public Media upload(
+                        MultipartFile file,
+                        String productId,
+                        String userId) throws IOException {
+
                 validate(file);
 
                 String objectName = UUID.randomUUID()
@@ -67,6 +71,7 @@ public class MediaServiceImpl implements MediaService {
                 Media media = Media.builder()
                                 .path(objectName)
                                 .productId(productId)
+                                .userId(userId)
                                 .contentType(file.getContentType())
                                 .build();
 

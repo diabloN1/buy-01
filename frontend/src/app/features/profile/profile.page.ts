@@ -46,7 +46,7 @@ import { LoadingSpinnerComponent } from "@shared/components/loading-spinner.comp
               hidden
               accept="image/*"
               #f
-              (change)="uploadAvatar(f.files!)"
+              (change)="uploadAvatar(f)"
             />
             <button
               mat-stroked-button
@@ -160,28 +160,61 @@ export class ProfilePage {
     this.profile.me().subscribe({
       next: (u) => {
         this.form.patchValue({ name: u.name, email: u.email });
-        this.avatarUrl.set(u.avatarUrl);
+        this.avatarUrl.set(u.avatar?.url);
         this.loading.set(false);
       },
       error: () => this.loading.set(false),
     });
   }
 
-  uploadAvatar(files: FileList) {
-    const file = files[0];
+  uploadAvatar(input: HTMLInputElement) {
+    const file = input.files?.[0];
+
     if (!file) return;
-    if (!file.type.startsWith("image/"))
+
+    if (!file.type.startsWith("image/")) {
       return this.notify.error("Not an image");
-    if (file.size > 2 * 1024 * 1024) return this.notify.error("Max 2 MB");
+    }
+
+    if (file.size > 2 * 1024 * 1024) {
+      return this.notify.error("Max 2 MB");
+    }
+
     this.uploading.set(true);
+
+    this.uploading.set(true);
+
+    this.profile.uploadAvatar(file).subscribe({
+      next: (user) => {
+        this.avatarUrl.set(user.avatar?.url);
+        this.notify.success("Avatar updated");
+        this.uploading.set(false);
+
+        input.value = "";
+      },
+      error: () => {
+        this.notify.error("Failed to upload avatar");
+        this.uploading.set(false);
+
+        input.value = "";
+      },
+    });
   }
 
   save() {
     if (this.form.invalid) return;
     this.saving.set(true);
     this.profile.update({ name: this.form.controls.name.value }).subscribe({
-      next: () => {
+      next: (user) => {
+        this.form.patchValue({
+          name: user.name,
+          email: user.email,
+        });
+
+        this.avatarUrl.set(user.avatar?.url);
+
         this.saving.set(false);
+
         this.notify.success("Profile saved");
       },
       error: () => this.saving.set(false),

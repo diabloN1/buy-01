@@ -29,8 +29,10 @@ public class MediaController {
         @PreAuthorize("hasRole('SELLER') or hasRole('ADMIN')")
         public ResponseEntity<Media> upload(
                         @RequestPart("image") MultipartFile image,
-                        @RequestParam(required = false) String productId) throws IOException {
-                Media media = mediaService.upload(image, productId);
+                        @RequestParam(required = false) String productId,
+                        @RequestParam(required = false) String userId) throws IOException {
+
+                Media media = mediaService.upload(image, productId, userId);
 
                 return ResponseEntity.status(HttpStatus.CREATED)
                                 .body(media);

@@ -36,6 +36,8 @@ public class User {
     @Builder.Default
     private Role role = Role.USER;
 
+    private String avatarId;
+
     @CreatedDate
     private LocalDateTime createdAt;
 

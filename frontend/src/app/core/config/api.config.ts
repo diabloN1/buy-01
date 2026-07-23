@@ -27,5 +27,6 @@ export const API = {
   },
   profile: {
     me: "/users/me",
+    avatar: "/users/me/avatar",
   },
 } as const;

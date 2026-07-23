@@ -18,10 +18,15 @@ public class Media {
 
     @Id
     private String id;
+
     private String path;
+
     private String productId;
+
+    private String userId;
+
     private String contentType;
-    
+
     @CreatedDate
     private LocalDateTime createdAt;
 
