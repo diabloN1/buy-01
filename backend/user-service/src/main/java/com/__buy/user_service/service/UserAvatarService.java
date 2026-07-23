@@ -21,7 +21,7 @@ public class UserAvatarService {
     }
 
     public void deleteAvatar(String avatarId) {
-
+        
         if (avatarId == null) {
             return;
         }

@@ -1,6 +1,7 @@
 package com.__buy.user_service.exception;
 
 import java.time.LocalDateTime;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 import org.springframework.dao.OptimisticLockingFailureException;
@@ -13,6 +14,7 @@ import org.springframework.web.multipart.MaxUploadSizeExceededException;
 
 import com.__buy.user_service.dto.ErrorResponse;
 
+import feign.FeignException;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
@@ -54,11 +56,15 @@ public class GlobalExceptionHandler {
         return buildErrorResponse(HttpStatus.UNAUTHORIZED, ex.getMessage());
     }
 
-    @ExceptionHandler(Exception.class)
-    public ResponseEntity<ErrorResponse> handleAllOtherExceptions(Exception ex) {
-        log.error("Unhandled exception occurred", ex);
+    @ExceptionHandler(FeignException.class)
+    public ResponseEntity<?> handleFeignException(FeignException ex) {
 
-        return buildErrorResponse(HttpStatus.INTERNAL_SERVER_ERROR, "An unexpected internal error occurred.");
+        return ResponseEntity
+                .status(ex.status() > 0
+                        ? ex.status()
+                        : HttpStatus.BAD_GATEWAY.value())
+                .body(Map.of(
+                        "error", ex.getMessage()));
     }
 
     @ExceptionHandler(MaxUploadSizeExceededException.class)
@@ -66,6 +72,13 @@ public class GlobalExceptionHandler {
             MaxUploadSizeExceededException ex) {
 
         return buildErrorResponse(HttpStatus.BAD_REQUEST, "Maximum file size is 2 MB.");
+    }
+
+    @ExceptionHandler(Exception.class)
+    public ResponseEntity<ErrorResponse> handleAllOtherExceptions(Exception ex) {
+        log.error("Unhandled exception occurred", ex);
+
+        return buildErrorResponse(HttpStatus.INTERNAL_SERVER_ERROR, "An unexpected internal error occurred.");
     }
 
     private ResponseEntity<ErrorResponse> buildErrorResponse(HttpStatus status, String message) {

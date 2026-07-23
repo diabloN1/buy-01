@@ -59,8 +59,6 @@ public class UserController {
     @GetMapping("/{id}")
     @PreAuthorize("hasAuthority('ROLE_ADMIN')")
     public ResponseEntity<UserResponse> getUserById(@PathVariable String id) {
-        System.out.println(">>> /users/{id} called");
-
         return ResponseEntity.ok(userService.getUserById(id));
     }
 
