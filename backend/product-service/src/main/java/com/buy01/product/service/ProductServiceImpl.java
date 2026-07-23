@@ -5,7 +5,6 @@ import java.util.List;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
-import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.stereotype.Service;
@@ -131,10 +130,6 @@ public class ProductServiceImpl implements ProductService {
     public void deleteProduct(String id) {
         Product product = findProductEntityById(id);
 
-        System.out.println("Owner: " + product.getUserId());
-        System.out.println("Current: " + getCurrentUUID());
-        System.out.println("Role: " + getCurrentRole());
-
         if (!isCurrentOwnerOrAdmin(product.getUserId())) {
             log.warn("User {} attempted to delete product {} without permissions", getCurrentUUID(), id);
             throw new ForbiddenException("Sorry! You are not the owner of this product");
@@ -188,18 +183,6 @@ public class ProductServiceImpl implements ProductService {
                 .getPrincipal();
 
         return jwt.getSubject();
-    }
-
-    private String getCurrentRole() {
-        return SecurityContextHolder.getContext()
-                .getAuthentication()
-                .getAuthorities()
-                .stream()
-                .map(GrantedAuthority::getAuthority)
-                .filter(a -> a.startsWith("ROLE_"))
-                .findFirst()
-                .map(a -> a.substring(5))
-                .orElse(null);
     }
 
     @Override

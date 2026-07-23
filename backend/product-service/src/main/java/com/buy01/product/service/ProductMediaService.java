@@ -29,11 +29,6 @@ public class ProductMediaService {
         List<String> imageIds = new ArrayList<>();
 
         for (MultipartFile image : images) {
-            System.out.println("===========");
-            System.out.println(image.getOriginalFilename());
-            System.out.println(image.getContentType());
-            System.out.println(image.getSize());
-            System.out.println(image.isEmpty());
             MediaResponse media = mediaClient.upload(image, productId);
             imageIds.add(media.id());
         }
