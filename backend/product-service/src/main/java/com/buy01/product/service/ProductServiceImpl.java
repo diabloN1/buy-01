@@ -170,11 +170,16 @@ public class ProductServiceImpl implements ProductService {
     }
 
     private boolean isCurrentOwnerOrAdmin(String ownerId) {
-        String currentUserId = getCurrentUUID();
-        String currentRole = getCurrentRole();
 
-        return ownerId.equals(currentUserId)
-                || "ADMIN".equals(currentRole);
+        String currentUserId = getCurrentUUID();
+
+        boolean isAdmin = SecurityContextHolder.getContext()
+                .getAuthentication()
+                .getAuthorities()
+                .stream()
+                .anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"));
+
+        return ownerId.equals(currentUserId) || isAdmin;
     }
 
     private String getCurrentUUID() {
@@ -190,10 +195,10 @@ public class ProductServiceImpl implements ProductService {
                 .getAuthentication()
                 .getAuthorities()
                 .stream()
-                .peek(a -> System.out.println("Authority = " + a.getAuthority()))
-                .findFirst()
                 .map(GrantedAuthority::getAuthority)
-                .map(role -> role.replaceFirst("^ROLE_", ""))
+                .filter(a -> a.startsWith("ROLE_"))
+                .findFirst()
+                .map(a -> a.substring(5))
                 .orElse(null);
     }
 

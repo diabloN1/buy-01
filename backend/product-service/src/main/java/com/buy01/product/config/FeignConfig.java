@@ -13,6 +13,11 @@ public class FeignConfig {
     @Bean
     RequestInterceptor bearerTokenInterceptor() {
         return requestTemplate -> {
+
+            System.out.println("========== FEIGN ==========");
+            System.out.println("Interceptor executed");
+
+            
             ServletRequestAttributes attributes = (ServletRequestAttributes) RequestContextHolder
                     .getRequestAttributes();
 

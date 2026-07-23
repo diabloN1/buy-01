@@ -1,4 +1,4 @@
-Admin: - [ ] - fix a problem in the admin dashboard of 403
+Admin: - [X] - fix a problem in the admin dashboard of 403
 
 Seller: - [ ] - Create an endpoint of get Products By Id to return only the seller product instead of getting max and filtering in front
 
