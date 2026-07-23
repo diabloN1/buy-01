@@ -8,6 +8,7 @@ import org.springframework.web.multipart.MultipartFile;
 import com.__buy.user_service.dto.CreateUserRequest;
 import com.__buy.user_service.dto.UpdateUserRequest;
 import com.__buy.user_service.dto.UserResponse;
+import com.__buy.user_service.dto.UserWidgetResponse;
 import com.__buy.user_service.service.UserService;
 
 import jakarta.validation.Valid;
@@ -34,6 +35,11 @@ import org.springframework.web.bind.annotation.RequestBody;
 public class UserController {
 
     private final UserService userService;
+
+    @GetMapping("/widget/{id}")
+    public ResponseEntity<UserWidgetResponse> getUserWidgetById(@PathVariable String id) {
+        return ResponseEntity.ok(new UserWidgetResponse(userService.getUserById(id)));
+    }
 
     @PostMapping
     @PreAuthorize("hasAuthority('ROLE_ADMIN')")

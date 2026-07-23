@@ -48,7 +48,7 @@ public class UserServiceImpl implements UserService {
 
         return mapToResponse(user);
     }
-
+    
     @Override
     public UserResponse getUserById(String id) {
         User user = userRepo.findById(id)
