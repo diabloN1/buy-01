@@ -5,8 +5,10 @@ import org.springframework.stereotype.Service;
 
 import com.__buy.user_service.dto.AuthResponse;
 import com.__buy.user_service.dto.LoginRequest;
+import com.__buy.user_service.dto.RefreshTokenRequest;
 import com.__buy.user_service.dto.RegisterRequest;
 import com.__buy.user_service.dto.UserResponse;
+import com.__buy.user_service.entity.RefreshToken;
 import com.__buy.user_service.entity.Role;
 import com.__buy.user_service.entity.User;
 import com.__buy.user_service.exception.ConflictException;
@@ -38,10 +40,12 @@ public class AuthServiceImpl implements AuthService {
 
         user = userRepository.save(user);
 
-        String token = jwtService.generateToken(user);
+        String accessToken = jwtService.generateAccessToken(user);
+        String refreshToken = jwtService.generateRefreshToken(user);
 
         return new AuthResponse(
-                token,
+                accessToken,
+                refreshToken,
                 new UserResponse(user));
     }
 
@@ -54,10 +58,29 @@ public class AuthServiceImpl implements AuthService {
             throw new UnauthorizedException("Invalid credentials");
         }
 
-        String token = jwtService.generateToken(user);
+        String accessToken = jwtService.generateAccessToken(user);
+        String refreshToken = jwtService.generateRefreshToken(user);
 
         return new AuthResponse(
-                token,
+                accessToken,
+                refreshToken,
+                new UserResponse(user));
+    }
+
+    @Override
+    public AuthResponse refreshToken(RefreshTokenRequest request) {
+
+        RefreshToken refreshToken = jwtService.validateRefreshToken(request.refreshToken());
+
+        User user = userRepository.findById(refreshToken.getUserId())
+                .orElseThrow(() -> new UnauthorizedException("User not found"));
+
+        String accessToken = jwtService.generateAccessToken(user);
+        String newRefreshToken = jwtService.generateRefreshToken(user);
+
+        return new AuthResponse(
+                accessToken,
+                newRefreshToken,
                 new UserResponse(user));
     }
 }

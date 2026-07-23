@@ -6,6 +6,7 @@ export const API = {
   auth: {
     login: "/users/auth/login",
     register: "/users/auth/register",
+    refresh: "/users/auth/refresh",
   },
 
   users: {

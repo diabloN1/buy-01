@@ -9,6 +9,7 @@ import org.springframework.web.bind.annotation.*;
 
 import com.__buy.user_service.dto.AuthResponse;
 import com.__buy.user_service.dto.LoginRequest;
+import com.__buy.user_service.dto.RefreshTokenRequest;
 import com.__buy.user_service.dto.RegisterRequest;
 import com.__buy.user_service.service.AuthService;
 
@@ -30,5 +31,12 @@ public class AuthController {
     @PostMapping("/login")
     public AuthResponse login(@Valid @RequestBody LoginRequest request) {
         return authService.login(request);
+    }
+
+    @PostMapping("/refresh")
+    public AuthResponse refreshToken(
+            @Valid @RequestBody RefreshTokenRequest request) {
+
+        return authService.refreshToken(request);
     }
 }

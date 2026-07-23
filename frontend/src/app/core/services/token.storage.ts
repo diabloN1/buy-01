@@ -4,17 +4,20 @@ import { User } from "../models/user.model";
 
 @Injectable({ providedIn: "root" })
 export class TokenStorage {
-  private memoryToken: string | null = null;
-
   getToken(): string | null {
-    return this.memoryToken ?? sessionStorage.getItem(STORAGE_KEYS.token);
+    return sessionStorage.getItem(STORAGE_KEYS.token);
   }
 
   setToken(token: string): void {
-    console.trace("setToken");
-
-    this.memoryToken = token;
     sessionStorage.setItem(STORAGE_KEYS.token, token);
+  }
+
+  getRefreshToken(): string | null {
+    return sessionStorage.getItem(STORAGE_KEYS.refreshToken);
+  }
+
+  setRefreshToken(token: string): void {
+    sessionStorage.setItem(STORAGE_KEYS.refreshToken, token);
   }
 
   getUser(): User | null {
@@ -23,17 +26,12 @@ export class TokenStorage {
   }
 
   setUser(user: User): void {
-    console.trace("setUser");
-
     sessionStorage.setItem(STORAGE_KEYS.user, JSON.stringify(user));
   }
 
   clear(): void {
-    console.trace("TokenStorage.clear() CALLED");
-
-    this.memoryToken = null;
-
     sessionStorage.removeItem(STORAGE_KEYS.token);
+    sessionStorage.removeItem(STORAGE_KEYS.refreshToken);
     sessionStorage.removeItem(STORAGE_KEYS.user);
   }
 }

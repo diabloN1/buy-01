@@ -21,8 +21,13 @@ export interface UserWidget {
 }
 
 export interface AuthResponse {
-  token: string;
+  accessToken: string;
+  refreshToken: string;
   user: User;
+}
+
+export interface RefreshTokenRequest {
+  refreshToken: string;
 }
 
 export interface LoginRequest {

@@ -1,7 +1,7 @@
 import { Injectable, computed, inject, signal } from "@angular/core";
 import { HttpClient } from "@angular/common/http";
 import { Router } from "@angular/router";
-import { Observable, tap } from "rxjs";
+import { finalize, Observable, shareReplay, tap, throwError } from "rxjs";
 import { API } from "../config/api.config";
 import {
   AuthResponse,
@@ -21,6 +21,9 @@ export class AuthService {
 
   private readonly _user = signal<User | null>(this.storage.getUser());
   private readonly _token = signal<string | null>(this.storage.getToken());
+
+  private refreshInProgress = false;
+  private refreshObservable?: Observable<AuthResponse>;
 
   readonly token = this._token.asReadonly();
   readonly user = this._user.asReadonly();
@@ -81,9 +84,10 @@ export class AuthService {
    */
   private validateSession(): void {
     const token = this.storage.getToken();
+    const refreshToken = this.storage.getRefreshToken();
     const user = this.storage.getUser();
 
-    const stale = !token || !user || isExpired(token);
+    const stale = !token || !refreshToken || !user || isExpired(token);
 
     if (stale) {
       this.storage.clear();
@@ -92,31 +96,45 @@ export class AuthService {
     } else {
       this._token.set(token);
       this._user.set(user);
-      this.scheduleAutoLogout(token);
     }
+  }
+  refresh(): Observable<AuthResponse> {
+    if (this.refreshInProgress && this.refreshObservable) {
+      return this.refreshObservable;
+    }
+
+    const refreshToken = this.storage.getRefreshToken();
+
+    if (!refreshToken) {
+      this.logout(false);
+      console.log("Hereeee !!!!!!!!11");
+      return throwError(() => new Error("Missing refresh token")); // We used the ThrowError from rxjs cause the      interceptor expect Observable machi normal js exception soo to be catched we used ThrowError that returns Observable<never>
+    }
+
+    this.refreshInProgress = true;
+
+    this.refreshObservable = this.http
+      .post<AuthResponse>(API.base + API.auth.refresh, {
+        refreshToken,
+      })
+      .pipe(
+        tap((response) => this.setSession(response)),
+        finalize(() => {
+          this.refreshInProgress = false;
+          this.refreshObservable = undefined;
+        }),
+        shareReplay(1)
+      );
+
+    return this.refreshObservable;
   }
 
   private setSession(res: AuthResponse): void {
-    this.storage.setToken(res.token);
+    this.storage.setToken(res.accessToken);
+    this.storage.setRefreshToken(res.refreshToken);
     this.storage.setUser(res.user);
 
-    this._token.set(res.token);
+    this._token.set(res.accessToken);
     this._user.set(res.user);
-
-    this.scheduleAutoLogout(res.token);
-  }
-
-  private scheduleAutoLogout(token: string): void {
-    if (this.expiryTimer) clearTimeout(this.expiryTimer);
-    const [, payload] = token.split(".");
-    try {
-      const { exp } = JSON.parse(atob(payload)) as { exp?: number };
-      if (!exp) return;
-      const ms = exp * 1000 - Date.now();
-      if (ms <= 0) return this.logout();
-      this.expiryTimer = setTimeout(() => this.logout(), ms);
-    } catch {
-      /* ignore */
-    }
   }
 }
