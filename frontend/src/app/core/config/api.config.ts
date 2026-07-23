@@ -16,6 +16,7 @@ export const API = {
 
   products: {
     root: "/products",
+    bySeller: (userId: string) => `/products/user/${userId}`,
     byId: (id: string) => `/products/${id}`,
     count: "/products/count",
   },

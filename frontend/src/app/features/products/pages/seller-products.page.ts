@@ -43,73 +43,79 @@ import { EmptyStateComponent } from "@shared/components/empty-state.component";
         >
       </div>
 
-      @if (loading()) { <app-loading-spinner /> } @else if (!items().length) {
-      <app-empty-state
-        icon="inventory_2"
-        title="No products yet"
-        description="Create your first product."
-      />
-      } @else {
-      <div class="app-card table-wrap">
-        <table mat-table [dataSource]="items()" [trackBy]="trackById">
-          <ng-container matColumnDef="thumb"
-            ><th mat-header-cell *matHeaderCellDef></th>
-            <td mat-cell *matCellDef="let p">
-              @if (p.imageUrls && p.imageUrls[0]) {
-              <img [src]="p.imageUrls[0]" alt="" class="thumb" /> } @else {
-              <mat-icon>image</mat-icon> }
-            </td></ng-container
-          >
-          <ng-container matColumnDef="name"
-            ><th mat-header-cell *matHeaderCellDef>Name</th>
-            <td mat-cell *matCellDef="let p">{{ p.name }}</td></ng-container
-          >
-          <ng-container matColumnDef="price"
-            ><th mat-header-cell *matHeaderCellDef>Price</th>
-            <td mat-cell *matCellDef="let p">
-              {{ p.price | currency }}
-            </td></ng-container
-          >
-          <ng-container matColumnDef="qty"
-            ><th mat-header-cell *matHeaderCellDef>Qty</th>
-            <td mat-cell *matCellDef="let p">{{ p.quantity }}</td></ng-container
-          >
-          <ng-container matColumnDef="actions"
-            ><th mat-header-cell *matHeaderCellDef></th>
-            <td mat-cell *matCellDef="let p">
-              <a
-                mat-icon-button
-                [routerLink]="['/products', p.id]"
-                aria-label="View"
-                ><mat-icon>visibility</mat-icon></a
-              >
-              <a
-                mat-icon-button
-                [routerLink]="['/seller/products', p.id, 'edit']"
-                aria-label="Edit"
-                ><mat-icon>edit</mat-icon></a
-              >
-              <button
-                mat-icon-button
-                color="warn"
-                (click)="remove(p)"
-                aria-label="Delete"
-              >
-                <mat-icon>delete</mat-icon>
-              </button>
-            </td></ng-container
-          >
-          <tr mat-header-row *matHeaderRowDef="cols"></tr>
-          <tr mat-row *matRowDef="let r; columns: cols"></tr>
-        </table>
-        <mat-paginator
-          [length]="total()"
-          [pageSize]="pageSize()"
-          [pageIndex]="page() - 1"
-          [pageSizeOptions]="[10, 25, 50]"
-          (page)="onPage($event)"
+      @if (loading()) {
+        <app-loading-spinner />
+      } @else if (!items().length) {
+        <app-empty-state
+          icon="inventory_2"
+          title="No products yet"
+          description="Create your first product."
         />
-      </div>
+      } @else {
+        <div class="app-card table-wrap">
+          <table mat-table [dataSource]="items()" [trackBy]="trackById">
+            <ng-container matColumnDef="thumb"
+              ><th mat-header-cell *matHeaderCellDef></th>
+              <td mat-cell *matCellDef="let p">
+                @if (p.imageUrls && p.imageUrls[0]) {
+                  <img [src]="p.imageUrls[0]" alt="" class="thumb" />
+                } @else {
+                  <mat-icon>image</mat-icon>
+                }
+              </td></ng-container
+            >
+            <ng-container matColumnDef="name"
+              ><th mat-header-cell *matHeaderCellDef>Name</th>
+              <td mat-cell *matCellDef="let p">{{ p.name }}</td></ng-container
+            >
+            <ng-container matColumnDef="price"
+              ><th mat-header-cell *matHeaderCellDef>Price</th>
+              <td mat-cell *matCellDef="let p">
+                {{ p.price | currency }}
+              </td></ng-container
+            >
+            <ng-container matColumnDef="qty"
+              ><th mat-header-cell *matHeaderCellDef>Qty</th>
+              <td mat-cell *matCellDef="let p">
+                {{ p.quantity }}
+              </td></ng-container
+            >
+            <ng-container matColumnDef="actions"
+              ><th mat-header-cell *matHeaderCellDef></th>
+              <td mat-cell *matCellDef="let p">
+                <a
+                  mat-icon-button
+                  [routerLink]="['/products', p.id]"
+                  aria-label="View"
+                  ><mat-icon>visibility</mat-icon></a
+                >
+                <a
+                  mat-icon-button
+                  [routerLink]="['/seller/products', p.id, 'edit']"
+                  aria-label="Edit"
+                  ><mat-icon>edit</mat-icon></a
+                >
+                <button
+                  mat-icon-button
+                  color="warn"
+                  (click)="remove(p)"
+                  aria-label="Delete"
+                >
+                  <mat-icon>delete</mat-icon>
+                </button>
+              </td></ng-container
+            >
+            <tr mat-header-row *matHeaderRowDef="cols"></tr>
+            <tr mat-row *matRowDef="let r; columns: cols"></tr>
+          </table>
+          <mat-paginator
+            [length]="total()"
+            [pageSize]="pageSize()"
+            [pageIndex]="page() - 1"
+            [pageSizeOptions]="[10, 25, 50]"
+            (page)="onPage($event)"
+          />
+        </div>
       }
     </section>
   `,
@@ -183,10 +189,11 @@ export class SellerProductsPage {
 
   private load() {
     this.loading.set(true);
-    this.svc.list(this.page(), this.pageSize()).subscribe({
+    this.svc.listBySeller(this.page(), this.pageSize(), this.auth.user()!.id).subscribe({
       next: (r) => {
-        const uid = this.auth.user()?.id;
-        this.items.set(r.content.filter((p) => p.userId === uid));
+        console.log("listBySeller response: ", r)
+
+        this.items.set(r.content);
         this.total.set(r.totalElements);
         this.loading.set(false);
       },

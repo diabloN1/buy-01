@@ -11,7 +11,7 @@ import {
   UserRole,
 } from "../models/user.model";
 import { TokenStorage } from "./token.storage";
-import { decodeJwt, isExpired } from "./jwt.util";
+import { isExpired } from "./jwt.util";
 
 @Injectable({ providedIn: "root" })
 export class AuthService {

@@ -38,6 +38,14 @@ public class ProductController {
         return productService.getProductById(id);
     }
 
+    @GetMapping("/user/{userId}")
+    public Page<ProductResponse> getProductsByUser(
+            @PathVariable String userId,
+            Pageable pageable) {
+
+        return productService.getProductsByUser(userId, pageable);
+    }
+
     @PreAuthorize("hasRole('ADMIN') or hasRole('SELLER')")
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ProductResponse create(
