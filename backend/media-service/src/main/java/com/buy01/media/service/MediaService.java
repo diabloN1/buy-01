@@ -11,10 +11,7 @@ public interface MediaService {
 
     Media get(String id);
 
-    Media upload(
-            MultipartFile file,
-            String productId,
-            String userId) throws IOException;
+    Media upload(MultipartFile file, String productId) throws IOException;
 
     Resource download(String id);
 

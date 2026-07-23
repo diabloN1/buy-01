@@ -34,7 +34,7 @@ public class ProductMediaService {
             System.out.println(image.getContentType());
             System.out.println(image.getSize());
             System.out.println(image.isEmpty());
-            MediaResponse media = mediaClient.upload(image, productId, null);
+            MediaResponse media = mediaClient.upload(image, productId);
             imageIds.add(media.id());
         }
 

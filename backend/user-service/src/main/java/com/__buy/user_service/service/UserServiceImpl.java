@@ -109,8 +109,7 @@ public class UserServiceImpl implements UserService {
             avatarService.deleteAvatar(user.getAvatarId());
         }
 
-        String avatarId = avatarService.uploadAvatar(avatar, userId);
-
+        String avatarId = avatarService.uploadAvatar(avatar);
         user.setAvatarId(avatarId);
 
         userRepo.save(user);

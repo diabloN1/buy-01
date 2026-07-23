@@ -17,8 +17,7 @@ public interface MediaClient {
     @PostMapping(value = "/media/images", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     MediaResponse upload(
             @RequestPart("image") MultipartFile image,
-            @RequestParam(required = false) String productId,
-            @RequestParam(required = false) String userId);
+            @RequestParam(required = false) String productId);
 
     @DeleteMapping("/media/images/{id}")
     void delete(@PathVariable String id);

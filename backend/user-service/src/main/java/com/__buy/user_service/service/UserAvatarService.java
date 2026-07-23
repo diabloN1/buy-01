@@ -14,10 +14,9 @@ public class UserAvatarService {
 
     private final MediaClient mediaClient;
 
-    public String uploadAvatar(MultipartFile avatar, String userId) {
+    public String uploadAvatar(MultipartFile avatar) {
 
-        MediaResponse media = mediaClient.upload(avatar, null, userId);
-
+        MediaResponse media = mediaClient.upload(avatar, null);
         return media.id();
     }
 

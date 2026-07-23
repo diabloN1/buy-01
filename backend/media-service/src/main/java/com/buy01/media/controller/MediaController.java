@@ -12,7 +12,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.buy01.media.entity.Media;
-import com.buy01.media.service.MediaServiceImpl;
+import com.buy01.media.service.MediaService;
 
 import org.springframework.core.io.Resource;
 
@@ -23,16 +23,15 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class MediaController {
 
-        private final MediaServiceImpl mediaService;
+        private final MediaService mediaService;
 
         @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
         @PreAuthorize("hasRole('SELLER') or hasRole('ADMIN')")
         public ResponseEntity<Media> upload(
                         @RequestPart("image") MultipartFile image,
-                        @RequestParam(required = false) String productId,
-                        @RequestParam(required = false) String userId) throws IOException {
+                        @RequestParam(required = false) String productId) throws IOException {
 
-                Media media = mediaService.upload(image, productId, userId);
+                Media media = mediaService.upload(image, productId);
 
                 return ResponseEntity.status(HttpStatus.CREATED)
                                 .body(media);
