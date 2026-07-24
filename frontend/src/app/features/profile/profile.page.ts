@@ -15,6 +15,7 @@ import { AuthService } from "@core/services/auth.service";
 import { NotificationService } from "@core/services/notification.service";
 import { FieldErrorComponent } from "@shared/components/field-error.component";
 import { LoadingSpinnerComponent } from "@shared/components/loading-spinner.component";
+import { MediaService } from "@core/services/media.service";
 
 @Component({
   selector: "app-profile",
@@ -33,59 +34,71 @@ import { LoadingSpinnerComponent } from "@shared/components/loading-spinner.comp
   template: `
     <section class="container">
       <h1>Profile</h1>
-      @if (loading()) { <app-loading-spinner /> } @else {
-      <div class="app-card panel">
-        <div class="avatar-row">
-          <div class="avatar">
-            @if (avatarUrl()) { <img [src]="avatarUrl()!" alt="avatar" /> }
-            @else { <mat-icon>person</mat-icon> }
+      @if (loading()) {
+        <app-loading-spinner />
+      } @else {
+        <div class="app-card panel">
+          <div class="avatar-row">
+            <div class="avatar">
+              @if (avatarUrl()) {
+                <img [src]="avatarUrl()!" alt="avatar" />
+              } @else {
+                <mat-icon>person</mat-icon>
+              }
+            </div>
+            @if (avatarUrl()) {
+              <button mat-button color="warn" (click)="deleteAvatar()">
+                <mat-icon>delete</mat-icon>
+                Remove avatar
+              </button>
+            }
+            <div>
+              <input
+                type="file"
+                hidden
+                accept="image/*"
+                #f
+                (change)="uploadAvatar(f)"
+              />
+              <button
+                mat-stroked-button
+                (click)="f.click()"
+                [disabled]="uploading()"
+              >
+                <mat-icon>photo_camera</mat-icon>
+                {{ uploading() ? "Uploading…" : "Change avatar" }}
+              </button>
+            </div>
           </div>
-          <div>
-            <input
-              type="file"
-              hidden
-              accept="image/*"
-              #f
-              (change)="uploadAvatar(f)"
-            />
-            <button
-              mat-stroked-button
-              (click)="f.click()"
-              [disabled]="uploading()"
-            >
-              <mat-icon>photo_camera</mat-icon>
-              {{ uploading() ? "Uploading…" : "Change avatar" }}
-            </button>
-          </div>
+
+          <form [formGroup]="form" (ngSubmit)="save()" class="stack">
+            <mat-form-field appearance="outline"
+              ><mat-label>Name</mat-label>
+              <input matInput formControlName="name"
+            /></mat-form-field>
+            <app-field-error [control]="form.controls.name" />
+
+            <mat-form-field appearance="outline"
+              ><mat-label>Email</mat-label>
+              <input
+                matInput
+                type="email"
+                formControlName="email"
+                [readonly]="true"
+            /></mat-form-field>
+
+            <div class="row">
+              <span class="grow"></span>
+              <button
+                mat-flat-button
+                color="primary"
+                [disabled]="form.invalid || saving()"
+              >
+                {{ saving() ? "Saving…" : "Save changes" }}
+              </button>
+            </div>
+          </form>
         </div>
-
-        <form [formGroup]="form" (ngSubmit)="save()" class="stack">
-          <mat-form-field appearance="outline"
-            ><mat-label>Name</mat-label> <input matInput formControlName="name"
-          /></mat-form-field>
-          <app-field-error [control]="form.controls.name" />
-
-          <mat-form-field appearance="outline"
-            ><mat-label>Email</mat-label>
-            <input
-              matInput
-              type="email"
-              formControlName="email"
-              [readonly]="true"
-          /></mat-form-field>
-
-          <div class="row">
-            <span class="grow"></span>
-            <button
-              mat-flat-button
-              color="primary"
-              [disabled]="form.invalid || saving()"
-            >
-              {{ saving() ? "Saving…" : "Save changes" }}
-            </button>
-          </div>
-        </form>
-      </div>
       }
     </section>
   `,
@@ -137,12 +150,13 @@ import { LoadingSpinnerComponent } from "@shared/components/loading-spinner.comp
 export class ProfilePage {
   private readonly fb = inject(FormBuilder);
   private readonly profile = inject(ProfileService);
-  private readonly auth = inject(AuthService);
   private readonly notify = inject(NotificationService);
+  private readonly media = inject(MediaService);
 
   readonly loading = signal(true);
   readonly saving = signal(false);
   readonly uploading = signal(false);
+  readonly avatarId = signal<string | undefined>(undefined);
   readonly avatarUrl = signal<string | undefined>(undefined);
 
   readonly form = this.fb.nonNullable.group({
@@ -160,6 +174,7 @@ export class ProfilePage {
     this.profile.me().subscribe({
       next: (u) => {
         this.form.patchValue({ name: u.name, email: u.email });
+        this.avatarId.set(u.avatar?.id);
         this.avatarUrl.set(u.avatar?.url);
         this.loading.set(false);
       },
@@ -187,6 +202,7 @@ export class ProfilePage {
     this.profile.uploadAvatar(file).subscribe({
       next: (user) => {
         this.avatarUrl.set(user.avatar?.url);
+        this.avatarId.set(user.avatar?.id);
         this.notify.success("Avatar updated");
         this.uploading.set(false);
 
@@ -197,6 +213,26 @@ export class ProfilePage {
         this.uploading.set(false);
 
         input.value = "";
+      },
+    });
+  }
+
+  deleteAvatar() {
+    const id = this.avatarId();
+
+    if (!id) {
+      return;
+    }
+
+    this.media.deleteAvatar(id).subscribe({
+      next: () => {
+        this.avatarId.set(undefined);
+        this.avatarUrl.set(undefined);
+
+        this.notify.success("Avatar removed");
+      },
+      error: () => {
+        this.notify.error("Failed to remove avatar");
       },
     });
   }
@@ -212,6 +248,7 @@ export class ProfilePage {
         });
 
         this.avatarUrl.set(user.avatar?.url);
+        this.avatarId.set(user.avatar?.id);
 
         this.saving.set(false);
 

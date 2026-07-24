@@ -13,4 +13,8 @@ export class MediaService {
   count(): Observable<number> {
     return this.http.get<number>(API.base + API.media.count);
   }
+
+  deleteAvatar(id: string): Observable<number> {
+    return this.http.delete<number>(API.base + API.media.delete(id));
+  }
 }
