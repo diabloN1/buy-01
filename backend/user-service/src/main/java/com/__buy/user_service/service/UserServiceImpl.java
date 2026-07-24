@@ -1,12 +1,16 @@
 package com.__buy.user_service.service;
 
+import java.util.Optional;
+
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.__buy.user_service.dto.CreateUserRequest;
+import com.__buy.user_service.dto.ImageDeletedEvent;
 import com.__buy.user_service.dto.UpdateUserRequest;
 import com.__buy.user_service.dto.UserResponse;
 import com.__buy.user_service.entity.Role;
@@ -48,7 +52,7 @@ public class UserServiceImpl implements UserService {
 
         return mapToResponse(user);
     }
-    
+
     @Override
     public UserResponse getUserById(String id) {
         User user = userRepo.findById(id)
@@ -118,19 +122,17 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public void deleteAvatar(String userId) {
-
-        User user = userRepo.findById(userId)
-                .orElseThrow(() -> new UserNotFoundException(userId));
-
-        if (user.getAvatarId() == null) {
+    @KafkaListener(topics = "avatar-deleted", groupId = "user-service")
+    public void handleImageDeleted(ImageDeletedEvent event) {
+        Optional<User> userOpt = userRepo.findByAvatarId(event.imageId());
+        
+        if (userOpt.isEmpty())
             return;
-        }
-
-        avatarService.deleteAvatar(user.getAvatarId());
-
+        
+        User user = userOpt.get();
         user.setAvatarId(null);
-
+        
         userRepo.save(user);
+        log.info("Deleted avatar for user: {}", user.getName());
     }
 }
