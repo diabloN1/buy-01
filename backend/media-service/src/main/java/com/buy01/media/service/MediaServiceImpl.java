@@ -7,12 +7,14 @@ import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
 
 import org.springframework.core.io.Resource;
+import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.core.io.InputStreamResource;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.security.oauth2.jwt.Jwt;
 
+import com.buy01.media.DTOs.ImageDeletedEvent;
 import com.buy01.media.entity.Media;
 import com.buy01.media.exception.custom.BadRequestException;
 import com.buy01.media.exception.custom.ForbiddenException;
@@ -35,7 +37,9 @@ public class MediaServiceImpl implements MediaService {
 
         private static final long MAX_FILE_SIZE = 2 * 1024 * 1024;
         private final MediaRepository mediaRepository;
+
         private final S3Client s3Client;
+        private final KafkaTemplate<String, ImageDeletedEvent> kafkaTemplate;
 
         @Value("${minio.bucket}")
         private String bucket;
@@ -102,7 +106,7 @@ public class MediaServiceImpl implements MediaService {
                         throw new ForbiddenException(
                                         "Sorry! You are not the owner of this product");
                 }
-                
+
                 s3Client.deleteObject(
                                 DeleteObjectRequest.builder()
                                                 .bucket(bucket)
@@ -110,6 +114,13 @@ public class MediaServiceImpl implements MediaService {
                                                 .build());
 
                 mediaRepository.delete(media);
+
+                if (media.getProductId() == null) {
+                        kafkaTemplate.send(
+                                        "avatar-deleted",
+                                        media.getId(),
+                                        new ImageDeletedEvent(media.getId()));
+                }
         }
 
         private void validate(MultipartFile file) throws IOException {
