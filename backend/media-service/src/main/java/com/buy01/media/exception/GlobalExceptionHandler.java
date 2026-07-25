@@ -20,6 +20,8 @@ import com.buy01.media.exception.custom.ForbiddenException;
 import com.buy01.media.exception.custom.NotFoundException;
 import com.buy01.media.exception.custom.UnauthorizedException;
 
+import feign.FeignException;
+
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
@@ -135,6 +137,17 @@ public class GlobalExceptionHandler {
                                 .body(Map.of(
                                                 "error",
                                                 "The resource was modified by another user. Please refresh and try again."));
+        }
+
+        @ExceptionHandler(FeignException.class)
+        public ResponseEntity<?> handleFeignException(FeignException ex) {
+
+                return ResponseEntity
+                                .status(ex.status() > 0
+                                                ? ex.status()
+                                                : HttpStatus.BAD_GATEWAY.value())
+                                .body(Map.of(
+                                                "error", ex.getMessage()));
         }
 
         // Catch All

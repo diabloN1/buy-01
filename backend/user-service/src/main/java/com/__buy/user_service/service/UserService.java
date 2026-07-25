@@ -5,7 +5,6 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.__buy.user_service.dto.CreateUserRequest;
-import com.__buy.user_service.dto.ImageDeletedEvent;
 import com.__buy.user_service.dto.UpdateUserRequest;
 import com.__buy.user_service.dto.UserResponse;
 
@@ -26,5 +25,5 @@ public interface UserService {
 
     UserResponse uploadAvatar(String userId, MultipartFile avatar);
 
-    void handleImageDeleted(ImageDeletedEvent event);
+    void deleteAvatar(String userId);
 }

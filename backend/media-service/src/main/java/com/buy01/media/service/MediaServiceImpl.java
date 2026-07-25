@@ -15,6 +15,7 @@ import org.springframework.web.multipart.MultipartFile;
 import org.springframework.security.oauth2.jwt.Jwt;
 
 import com.buy01.media.DTOs.ImageDeletedEvent;
+import com.buy01.media.client.UserClient;
 import com.buy01.media.entity.Media;
 import com.buy01.media.exception.custom.BadRequestException;
 import com.buy01.media.exception.custom.ForbiddenException;
@@ -37,9 +38,9 @@ public class MediaServiceImpl implements MediaService {
 
         private static final long MAX_FILE_SIZE = 2 * 1024 * 1024;
         private final MediaRepository mediaRepository;
+        private final UserClient userClient;
 
         private final S3Client s3Client;
-        private final KafkaTemplate<String, ImageDeletedEvent> kafkaTemplate;
 
         @Value("${minio.bucket}")
         private String bucket;
@@ -116,10 +117,7 @@ public class MediaServiceImpl implements MediaService {
                 mediaRepository.delete(media);
 
                 if (media.getProductId() == null) {
-                        kafkaTemplate.send(
-                                        "avatar-deleted",
-                                        media.getId(),
-                                        new ImageDeletedEvent(media.getId()));
+                        userClient.deleteAvatar();
                 }
         }
 

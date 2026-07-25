@@ -107,4 +107,12 @@ public class UserController {
         return ResponseEntity.ok(
                 userService.uploadAvatar(jwt.getSubject(), image));
     }
+
+    @PreAuthorize("isAuthenticated()")
+    @DeleteMapping("/me/avatar")
+    public ResponseEntity<Void> deleteAvatar(@AuthenticationPrincipal Jwt jwt) {
+        
+        userService.deleteAvatar(jwt.getSubject());
+        return ResponseEntity.noContent().build();
+    }
 }
