@@ -5,6 +5,5 @@ public enum AuditAction {
     CREATED,
     MODIFIED,
     DELETED,
-    DOWNLOADED,
     UPLOADED,
 }

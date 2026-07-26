@@ -1,6 +1,7 @@
 package com.buy01.media.aspect;
 
 import com.buy01.media.event.AuditEvent;
+import com.buy01.media.event.EntityType;
 import com.buy01.media.service.AuditEventProducer;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -46,7 +47,7 @@ public class AuditAspect {
 
                         AuditEvent event = new AuditEvent(
                                         entityId,
-                                        auditable.entityType(),
+                                        EntityType.MEDIA,
                                         auditable.action(),
                                         userId,
                                         executedByAdmin,
