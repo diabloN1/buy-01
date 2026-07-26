@@ -7,14 +7,12 @@ import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
 
 import org.springframework.core.io.Resource;
-import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.core.io.InputStreamResource;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.security.oauth2.jwt.Jwt;
 
-import com.buy01.media.DTOs.ImageDeletedEvent;
 import com.buy01.media.client.UserClient;
 import com.buy01.media.entity.Media;
 import com.buy01.media.exception.custom.BadRequestException;
@@ -29,6 +27,9 @@ import software.amazon.awssdk.core.sync.RequestBody;
 
 import software.amazon.awssdk.services.s3.S3Client;
 import software.amazon.awssdk.services.s3.model.*;
+
+import com.buy01.media.aspect.Auditable;
+import com.buy01.media.event.AuditAction;
 
 import org.springframework.beans.factory.annotation.Value;
 
@@ -54,6 +55,7 @@ public class MediaServiceImpl implements MediaService {
         }
 
         @Override
+        @Auditable(action = AuditAction.UPLOADED, entityId = "#result.id")
         public Media upload(MultipartFile file, String productId) throws IOException {
 
                 validate(file);
@@ -99,6 +101,7 @@ public class MediaServiceImpl implements MediaService {
         }
 
         @Override
+        @Auditable(action = AuditAction.DELETED, entityId = "#id")
         public void delete(String id) {
                 Media media = mediaRepository.findById(id)
                                 .orElseThrow(() -> new NotFoundException("Image not found"));

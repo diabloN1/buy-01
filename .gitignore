@@ -2,4 +2,5 @@
 **/docker.log
 **/.env
 docs/
-KafkaConfigExemple
+KafkaConfigConsomerExemple
+KafkaConfigProducerExemple

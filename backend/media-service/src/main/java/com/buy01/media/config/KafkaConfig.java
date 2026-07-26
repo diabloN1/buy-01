@@ -1,60 +1,42 @@
 package com.buy01.media.config;
 
-import java.util.HashMap;
-import java.util.Map;
-
-import org.apache.kafka.clients.admin.NewTopic;
+import com.buy01.media.event.AuditEvent;
 import org.apache.kafka.clients.producer.ProducerConfig;
 import org.apache.kafka.common.serialization.StringSerializer;
-
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.kafka.config.TopicBuilder;
 import org.springframework.kafka.core.DefaultKafkaProducerFactory;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.kafka.core.ProducerFactory;
 import org.springframework.kafka.support.serializer.JacksonJsonSerializer;
 
-import com.buy01.media.DTOs.ImageDeletedEvent;
+import java.util.HashMap;
+import java.util.Map;
 
 @Configuration
 public class KafkaConfig {
 
-    @Value("${spring.kafka.bootstrap-servers}")
-    private String kafkaServers;
+    @Value("${spring.kafka.bootstrap-servers:kafka:9092}")
+    private String bootstrapServers;
 
     @Bean
-    NewTopic avatarDeletedTopic() {
-        return TopicBuilder.name("avatar-deleted")
-                .partitions(1)
-                .replicas(1)
-                .build();
+    public ProducerFactory<String, AuditEvent> producerFactory() {
+        Map<String, Object> props = new HashMap<>();
+        props.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, bootstrapServers);
+
+        JacksonJsonSerializer<AuditEvent> serializer = new JacksonJsonSerializer<>();
+        serializer.setAddTypeInfo(false);
+
+        return new DefaultKafkaProducerFactory<>(
+                props,
+                new StringSerializer(),
+                serializer
+        );
     }
 
     @Bean
-    ProducerFactory<String, ImageDeletedEvent> producerFactory() {
-
-        Map<String, Object> config = new HashMap<>();
-
-        config.put(
-                ProducerConfig.BOOTSTRAP_SERVERS_CONFIG,
-                kafkaServers);
-
-        config.put(
-                ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG,
-                StringSerializer.class);
-
-        config.put(
-                ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG,
-                JacksonJsonSerializer.class);
-
-        return new DefaultKafkaProducerFactory<>(config);
-    }
-
-    @Bean
-    KafkaTemplate<String, ImageDeletedEvent> kafkaTemplate(
-            ProducerFactory<String, ImageDeletedEvent> producerFactory) {
-        return new KafkaTemplate<>(producerFactory);
+    public KafkaTemplate<String, AuditEvent> kafkaTemplate() {
+        return new KafkaTemplate<>(producerFactory());
     }
 }

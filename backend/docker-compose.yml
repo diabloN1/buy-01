@@ -149,6 +149,33 @@ services:
       timeout: 3s
       retries: 20
 
+  audit:
+    build: ./audit-service
+    depends_on:
+      eureka:
+        condition: service_healthy
+      mongodb:
+        condition: service_started
+      kafka:
+        condition: service_healthy
+    ports:
+      - "8084:8084"
+    environment:
+      JWT_SECRET: tr9+iBC8Pz/AAdHWef4hgQpuN3U7pcOtDj4hgQpuN3U7pcOtDYJl6zRyXI=
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "wget",
+          "-q",
+          "-O",
+          "-",
+          "http://localhost:8084/actuator/health",
+        ]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+
   api-gateway:
     build: ./api-gateway
     depends_on:
@@ -157,6 +184,8 @@ services:
       user:
         condition: service_healthy
       media:
+        condition: service_healthy
+      audit:
         condition: service_healthy
       kafka:
         condition: service_healthy
