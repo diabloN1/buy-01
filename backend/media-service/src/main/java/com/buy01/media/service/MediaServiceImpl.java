@@ -13,6 +13,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.security.oauth2.jwt.Jwt;
 
+import com.buy01.media.aop.Auditable;
 import com.buy01.media.client.UserClient;
 import com.buy01.media.entity.Media;
 import com.buy01.media.exception.custom.BadRequestException;
@@ -28,7 +29,6 @@ import software.amazon.awssdk.core.sync.RequestBody;
 import software.amazon.awssdk.services.s3.S3Client;
 import software.amazon.awssdk.services.s3.model.*;
 
-import com.buy01.media.aspect.Auditable;
 import com.buy01.media.event.AuditAction;
 
 import org.springframework.beans.factory.annotation.Value;

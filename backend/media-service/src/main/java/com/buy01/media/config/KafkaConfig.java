@@ -17,11 +17,11 @@ import java.util.Map;
 @Configuration
 public class KafkaConfig {
 
-    @Value("${spring.kafka.bootstrap-servers:kafka:9092}")
+    @Value("${spring.kafka.bootstrap-servers}")
     private String bootstrapServers;
 
     @Bean
-    public ProducerFactory<String, AuditEvent> producerFactory() {
+    ProducerFactory<String, AuditEvent> producerFactory() {
         Map<String, Object> props = new HashMap<>();
         props.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, bootstrapServers);
 
@@ -36,7 +36,7 @@ public class KafkaConfig {
     }
 
     @Bean
-    public KafkaTemplate<String, AuditEvent> kafkaTemplate() {
+    KafkaTemplate<String, AuditEvent> kafkaTemplate() {
         return new KafkaTemplate<>(producerFactory());
     }
 }

@@ -1,4 +1,4 @@
-package com.buy01.media.aspect;
+package com.buy01.media.aop;
 
 import com.buy01.media.event.AuditEvent;
 import com.buy01.media.event.EntityType;
