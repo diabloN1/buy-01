@@ -18,8 +18,10 @@ import org.springframework.data.domain.Pageable;
 import com.buy01.product.DTOs.CreateRequest;
 import com.buy01.product.DTOs.ProductImageResponse;
 import com.buy01.product.DTOs.UpdateRequest;
+import com.buy01.product.aop.Auditable;
 import com.buy01.product.DTOs.ProductResponse;
 import com.buy01.product.entity.Product;
+import com.buy01.product.event.AuditAction;
 import com.buy01.product.exception.custom.ForbiddenException;
 import com.buy01.product.exception.custom.NotFoundException;
 import com.buy01.product.repository.ProductRepository;
@@ -36,6 +38,22 @@ public class ProductServiceImpl implements ProductService {
     private final ProductRepository productRepository;
 
     @Override
+    public Page<ProductResponse> getAllProducts(Pageable pageable) {
+        return productRepository.findAll(pageable).map(this::mapToResponse);
+    }
+
+    @Override
+    public ProductResponse getProductById(String id) {
+        return mapToResponse(findProductEntityById(id));
+    }
+
+    @Override
+    public Page<ProductResponse> getProductsByUser(String userId, Pageable pageable) {
+        return productRepository.findByUserId(userId, pageable).map(this::mapToResponse);
+    }
+
+    @Override
+    @Auditable(action = AuditAction.CREATED, entityId = "#result.id")
     public ProductResponse createProduct(CreateRequest req, List<MultipartFile> images) {
 
         String currentUserId = getCurrentUUID();
@@ -66,21 +84,7 @@ public class ProductServiceImpl implements ProductService {
     }
 
     @Override
-    public Page<ProductResponse> getAllProducts(Pageable pageable) {
-        return productRepository.findAll(pageable).map(this::mapToResponse);
-    }
-
-    @Override
-    public ProductResponse getProductById(String id) {
-        return mapToResponse(findProductEntityById(id));
-    }
-
-    @Override
-    public Page<ProductResponse> getProductsByUser(String userId, Pageable pageable) {
-        return productRepository.findByUserId(userId, pageable).map(this::mapToResponse);
-    }
-
-    @Override
+    @Auditable(action = AuditAction.MODIFIED, entityId = "#id")
     public ProductResponse updateProduct(
             String id,
             UpdateRequest updated,
@@ -127,6 +131,7 @@ public class ProductServiceImpl implements ProductService {
     }
 
     @Override
+    @Auditable(action = AuditAction.DELETED, entityId = "#id")
     public void deleteProduct(String id) {
         Product product = findProductEntityById(id);
 
