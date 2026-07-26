@@ -3,6 +3,7 @@ package com.__buy.user_service.service;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import com.__buy.user_service.aop.Auditable;
 import com.__buy.user_service.dto.AuthResponse;
 import com.__buy.user_service.dto.LoginRequest;
 import com.__buy.user_service.dto.RefreshTokenRequest;
@@ -11,6 +12,7 @@ import com.__buy.user_service.dto.UserResponse;
 import com.__buy.user_service.entity.RefreshToken;
 import com.__buy.user_service.entity.Role;
 import com.__buy.user_service.entity.User;
+import com.__buy.user_service.event.AuditAction;
 import com.__buy.user_service.exception.ConflictException;
 import com.__buy.user_service.exception.UnauthorizedException;
 import com.__buy.user_service.repository.UserRepository;
@@ -25,6 +27,7 @@ public class AuthServiceImpl implements AuthService {
     private final PasswordEncoder passwordEncoder;
     private final JwtService jwtService;
 
+    @Auditable(action = AuditAction.CREATED, entityId = "#result.user.id")
     public AuthResponse register(RegisterRequest request) {
 
         if (userRepository.findByEmail(request.email()).isPresent()) {
