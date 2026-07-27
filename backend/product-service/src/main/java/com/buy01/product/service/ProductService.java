@@ -28,4 +28,6 @@ public interface ProductService {
     void deleteProduct(String id);
 
     long countProducts();
+
+    void removeImageFromProduct(String productId, String imageId);
 }

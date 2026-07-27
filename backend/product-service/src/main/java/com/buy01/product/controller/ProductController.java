@@ -75,8 +75,15 @@ public class ProductController {
         productService.deleteProduct(id);
     }
 
+    @PreAuthorize("hasRole('ADMIN') or hasRole('SELLER')")
+    @DeleteMapping("/{productId}/images/{imageId}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void removeImageFromProduct(@PathVariable String productId, @PathVariable String imageId) {
+        productService.removeImageFromProduct(productId, imageId);
+    }
+
     @GetMapping("/count")
-    @PreAuthorize("hasRole('ADMIN') or hasRole('SELER')")
+    @PreAuthorize("hasRole('ADMIN') or hasRole('SELLER')")
     public long countProducts() {
         return productService.countProducts();
     }

@@ -99,6 +99,14 @@ export const APP_ROUTES: Routes = [
       ),
   },
   {
+    path: "seller/media",
+    canActivate: [authGuard, roleGuard(["SELLER", "ADMIN"])],
+    loadComponent: () =>
+      import("./features/media/media-management.page").then(
+        (m) => m.MediaManagementPage
+      ),
+  },
+  {
     path: "profile",
     canActivate: [authGuard],
     loadComponent: () =>

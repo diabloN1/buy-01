@@ -3,6 +3,9 @@ package com.buy01.media.controller;
 import java.io.IOException;
 import java.time.Duration;
 
+import org.springframework.core.io.Resource;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.CacheControl;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -13,8 +16,6 @@ import org.springframework.web.multipart.MultipartFile;
 
 import com.buy01.media.entity.Media;
 import com.buy01.media.service.MediaService;
-
-import org.springframework.core.io.Resource;
 
 import lombok.RequiredArgsConstructor;
 
@@ -53,6 +54,12 @@ public class MediaController {
         public ResponseEntity<Void> delete(@PathVariable String id) {
                 mediaService.delete(id);
                 return ResponseEntity.noContent().build();
+        }
+
+        @GetMapping("/user/{userId}")
+        @PreAuthorize("hasRole('SELLER') or hasRole('ADMIN')")
+        public ResponseEntity<Page<Media>> getMediaByUser(@PathVariable String userId, Pageable pageable) {
+                return ResponseEntity.ok(mediaService.getMediaByUserId(userId, pageable));
         }
 
         @GetMapping("/count")

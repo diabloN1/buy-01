@@ -1,7 +1,10 @@
 export interface MediaImage {
   id: string;
-  url: string;
-  size?: number;
+  path?: string;
+  productId?: string;
+  userId?: string;
   contentType?: string;
   createdAt?: string;
+  size?: number;
+  url?: string;
 }
