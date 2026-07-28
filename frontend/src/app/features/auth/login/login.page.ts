@@ -151,8 +151,13 @@ export class LoginPage {
           this.route.snapshot.queryParamMap.get("returnUrl") ?? "/";
         this.router.navigateByUrl(returnUrl);
       },
-      error: () => {
+      error: (err) => {
         this.loading.set(false);
+        if (err.status == 401) {
+          this.notify.error("Invalid email or password");
+        } else {
+          this.notify.error("An error aquired, please try again later!");
+        }
       },
     });
   }
