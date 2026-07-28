@@ -13,7 +13,11 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.security.oauth2.jwt.Jwt;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+
 import com.buy01.media.aop.Auditable;
+import com.buy01.media.client.ProductClient;
 import com.buy01.media.client.UserClient;
 import com.buy01.media.entity.Media;
 import com.buy01.media.exception.custom.BadRequestException;
@@ -22,6 +26,7 @@ import com.buy01.media.exception.custom.NotFoundException;
 import com.buy01.media.repository.MediaRepository;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 import software.amazon.awssdk.core.ResponseInputStream;
 import software.amazon.awssdk.core.sync.RequestBody;
@@ -33,25 +38,24 @@ import com.buy01.media.event.AuditAction;
 
 import org.springframework.beans.factory.annotation.Value;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class MediaServiceImpl implements MediaService {
 
-        private static final long MAX_FILE_SIZE = 2 * 1024 * 1024;
         private final MediaRepository mediaRepository;
         private final UserClient userClient;
-
+        private final ProductClient productClient;
         private final S3Client s3Client;
+        
+        private static final long MAX_FILE_SIZE = 2 * 1024 * 1024;
 
         @Value("${minio.bucket}")
         private String bucket;
 
         @Override
         public Media get(String id) {
-
-                return mediaRepository.findById(id)
-                                .orElseThrow(
-                                                () -> new NotFoundException("Image not found"));
+                return getMediaOrThrow(id);
         }
 
         @Override
@@ -87,9 +91,7 @@ public class MediaServiceImpl implements MediaService {
 
         @Override
         public Resource download(String id) {
-                Media media = mediaRepository.findById(id)
-                                .orElseThrow(
-                                                () -> new NotFoundException("Image not found"));
+                Media media = getMediaOrThrow(id);
 
                 ResponseInputStream<GetObjectResponse> stream = s3Client.getObject(
                                 GetObjectRequest.builder()
@@ -103,25 +105,20 @@ public class MediaServiceImpl implements MediaService {
         @Override
         @Auditable(action = AuditAction.DELETED, entityId = "#id")
         public void delete(String id) {
-                Media media = mediaRepository.findById(id)
-                                .orElseThrow(() -> new NotFoundException("Image not found"));
+                Media media = getMediaOrThrow(id);
 
-                if (!isCurrentOwnerOrAdmin(media.getUserId())) {
-                        throw new ForbiddenException(
-                                        "Sorry! You are not the owner of this product");
-                }
+                verifyOwnership(media);
 
-                s3Client.deleteObject(
-                                DeleteObjectRequest.builder()
-                                                .bucket(bucket)
-                                                .key(media.getPath())
-                                                .build());
+                deleteObject(media);
 
                 mediaRepository.delete(media);
 
-                if (media.getProductId() == null) {
-                        userClient.deleteAvatar();
-                }
+                notifyRelatedService(media);
+        }
+
+        @Override
+        public Page<Media> getMediaByUserId(String userId, Pageable pageable) {
+                return mediaRepository.findByUserId(userId, pageable);
         }
 
         private void validate(MultipartFile file) throws IOException {
@@ -192,5 +189,62 @@ public class MediaServiceImpl implements MediaService {
                                 .getPrincipal();
 
                 return jwt.getSubject();
+        }
+
+        private void verifyOwnership(Media media) {
+                if (!isCurrentOwnerOrAdmin(media.getUserId())) {
+                        throw new ForbiddenException(
+                                        "Sorry! You are not the owner of this Media");
+                }
+        }
+
+        private Media getMediaOrThrow(String id) {
+                return mediaRepository.findById(id)
+                                .orElseThrow(() -> new NotFoundException("Image not found"));
+        }
+
+        private void deleteObject(Media media) {
+                s3Client.deleteObject(
+                                DeleteObjectRequest.builder()
+                                                .bucket(bucket)
+                                                .key(media.getPath())
+                                                .build());
+        }
+
+        private void notifyRelatedService(Media media) {
+
+                if (media.getProductId() != null && !media.getProductId().isBlank()) {
+                        notifyProductService(media);
+                        return;
+                }
+
+                notifyUserService(media.getId());
+        }
+
+        private void notifyUserService(String mediaId) {
+                try {
+                        userClient.deleteAvatar();
+
+                } catch (Exception e) {
+                        log.error(
+                                        "Failed to notify user-service about deleted avatar image {}",
+                                        mediaId,
+                                        e);
+                }
+        }
+
+        private void notifyProductService(Media media) {
+                try {
+                        productClient.deleteImageFromProduct(
+                                        media.getProductId(),
+                                        media.getId());
+
+                } catch (Exception e) {
+                        log.error(
+                                        "Failed to notify product-service about deleted image {} for product {}",
+                                        media.getId(),
+                                        media.getProductId(),
+                                        e);
+                }
         }
 }

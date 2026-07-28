@@ -46,7 +46,7 @@ import { ThemeService } from "../services/theme.service";
           My Products
         </a>
 
-        <a mat-button routerLink="/media" routerLinkActive="active"> Media </a>
+        <a mat-stroked-button routerLink="/seller/media">Media management</a>
         } @if (auth.isAdmin()) {
         <a mat-button routerLink="/admin/dashboard" routerLinkActive="active">
           Dashboard

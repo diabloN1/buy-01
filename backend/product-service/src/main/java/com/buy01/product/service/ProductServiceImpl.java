@@ -71,7 +71,7 @@ public class ProductServiceImpl implements ProductService {
 
         try {
 
-            saved.setImageIds(productMediaService.uploadImages(images, saved.getId()));
+            saved.setImageIds(productMediaService.uploadImages(images, saved.getId(), saved.getUserId()));
 
             saved = productRepository.save(saved);
 
@@ -120,7 +120,7 @@ public class ProductServiceImpl implements ProductService {
 
             List<String> newImages = productMediaService.uploadImages(
                     images,
-                    product.getId());
+                    product.getId(), product.getUserId());
 
             product.getImageIds()
                     .addAll(newImages);
@@ -142,6 +142,18 @@ public class ProductServiceImpl implements ProductService {
 
         productRepository.delete(product);
         log.info("Product {} deleted successfully", id);
+    }
+
+    @Override
+    public void removeImageFromProduct(String productId, String imageId) {
+        Product product = productRepository.findById(productId).orElse(null);
+        if (product != null && product.getImageIds() != null) {
+            boolean removed = product.getImageIds().remove(imageId);
+            if (removed) {
+                productRepository.save(product);
+                log.info("Removed image {} from product {}", imageId, productId);
+            }
+        }
     }
 
     private Product findProductEntityById(String id) {

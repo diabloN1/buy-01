@@ -8,7 +8,6 @@ import org.springframework.web.multipart.MultipartFile;
 
 import com.buy01.product.DTOs.MediaResponse;
 import com.buy01.product.client.MediaClient;
-import com.buy01.product.exception.custom.BadRequestException;
 
 import lombok.RequiredArgsConstructor;
 
@@ -18,13 +17,7 @@ public class ProductMediaService {
 
     private final MediaClient mediaClient;
 
-    public List<String> uploadImages(List<MultipartFile> images, String productId) {
-
-        // Could be removed since we already validat the image existance in the
-        // controller using the exception handler "MissingServletRequestPartException"
-        if (images == null || images.isEmpty()) {
-            throw new BadRequestException("At least one image is required.");
-        }
+    public List<String> uploadImages(List<MultipartFile> images, String productId, String userId) {
 
         List<String> imageIds = new ArrayList<>();
 

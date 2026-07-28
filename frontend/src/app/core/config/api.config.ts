@@ -26,6 +26,7 @@ export const API = {
   media: {
     images: "/media/images",
     byId: (id: string) => `/media/images/${id}`,
+    byUser: (userId: string) => `/media/images/user/${userId}`,
     count: "/media/images/count",
     delete: (id: string) => `/media/images/${id}`,
   },
