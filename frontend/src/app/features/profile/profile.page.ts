@@ -16,6 +16,7 @@ import { NotificationService } from "@core/services/notification.service";
 import { FieldErrorComponent } from "@shared/components/field-error.component";
 import { LoadingSpinnerComponent } from "@shared/components/loading-spinner.component";
 import { MediaService } from "@core/services/media.service";
+import { CurrentUserService } from "@core/services/current-user.service";
 
 @Component({
   selector: "app-profile",
@@ -35,70 +36,69 @@ import { MediaService } from "@core/services/media.service";
     <section class="container">
       <h1>Profile</h1>
       @if (loading()) {
-        <app-loading-spinner />
+      <app-loading-spinner />
       } @else {
-        <div class="app-card panel">
-          <div class="avatar-row">
-            <div class="avatar">
-              @if (avatarUrl()) {
-                <img [src]="avatarUrl()!" alt="avatar" />
-              } @else {
-                <mat-icon>person</mat-icon>
-              }
-            </div>
+      <div class="app-card panel">
+        <div class="avatar-row">
+          <div class="avatar">
             @if (avatarUrl()) {
-              <button mat-button color="warn" (click)="deleteAvatar()">
-                <mat-icon>delete</mat-icon>
-                Remove avatar
-              </button>
+            <img [src]="avatarUrl()!" alt="avatar" />
+            } @else {
+            <mat-icon>person</mat-icon>
             }
-            <div>
-              <input
-                type="file"
-                hidden
-                accept="image/*"
-                #f
-                (change)="uploadAvatar(f)"
-              />
-              <button
-                mat-stroked-button
-                (click)="f.click()"
-                [disabled]="uploading()"
-              >
-                <mat-icon>photo_camera</mat-icon>
-                {{ uploading() ? "Uploading…" : "Change avatar" }}
-              </button>
-            </div>
           </div>
-
-          <form [formGroup]="form" (ngSubmit)="save()" class="stack">
-            <mat-form-field appearance="outline"
-              ><mat-label>Name</mat-label>
-              <input matInput formControlName="name"
-            /></mat-form-field>
-            <app-field-error [control]="form.controls.name" />
-
-            <mat-form-field appearance="outline"
-              ><mat-label>Email</mat-label>
-              <input
-                matInput
-                type="email"
-                formControlName="email"
-                [readonly]="true"
-            /></mat-form-field>
-
-            <div class="row">
-              <span class="grow"></span>
-              <button
-                mat-flat-button
-                color="primary"
-                [disabled]="form.invalid || saving()"
-              >
-                {{ saving() ? "Saving…" : "Save changes" }}
-              </button>
-            </div>
-          </form>
+          @if (avatarUrl()) {
+          <button mat-button color="warn" (click)="deleteAvatar()">
+            <mat-icon>delete</mat-icon>
+            Remove avatar
+          </button>
+          }
+          <div>
+            <input
+              type="file"
+              hidden
+              accept="image/*"
+              #f
+              (change)="uploadAvatar(f)"
+            />
+            <button
+              mat-stroked-button
+              (click)="f.click()"
+              [disabled]="uploading()"
+            >
+              <mat-icon>photo_camera</mat-icon>
+              {{ uploading() ? "Uploading…" : "Change avatar" }}
+            </button>
+          </div>
         </div>
+
+        <form [formGroup]="form" (ngSubmit)="save()" class="stack">
+          <mat-form-field appearance="outline"
+            ><mat-label>Name</mat-label> <input matInput formControlName="name"
+          /></mat-form-field>
+          <app-field-error [control]="form.controls.name" />
+
+          <mat-form-field appearance="outline"
+            ><mat-label>Email</mat-label>
+            <input
+              matInput
+              type="email"
+              formControlName="email"
+              [readonly]="true"
+          /></mat-form-field>
+
+          <div class="row">
+            <span class="grow"></span>
+            <button
+              mat-flat-button
+              color="primary"
+              [disabled]="form.invalid || saving()"
+            >
+              {{ saving() ? "Saving…" : "Save changes" }}
+            </button>
+          </div>
+        </form>
+      </div>
       }
     </section>
   `,
@@ -152,6 +152,7 @@ export class ProfilePage {
   private readonly profile = inject(ProfileService);
   private readonly notify = inject(NotificationService);
   private readonly media = inject(MediaService);
+  private readonly currentUser = inject(CurrentUserService);
 
   readonly loading = signal(true);
   readonly saving = signal(false);
@@ -177,6 +178,7 @@ export class ProfilePage {
         this.avatarId.set(u.avatar?.id);
         this.avatarUrl.set(u.avatar?.url);
         this.loading.set(false);
+        this.currentUser.load();
       },
       error: () => this.loading.set(false),
     });
