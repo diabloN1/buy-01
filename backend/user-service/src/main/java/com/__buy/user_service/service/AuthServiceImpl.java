@@ -4,9 +4,8 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import com.__buy.user_service.aop.Auditable;
-import com.__buy.user_service.dto.AuthResponse;
+import com.__buy.user_service.dto.AuthResult;
 import com.__buy.user_service.dto.LoginRequest;
-import com.__buy.user_service.dto.RefreshTokenRequest;
 import com.__buy.user_service.dto.RegisterRequest;
 import com.__buy.user_service.dto.UserResponse;
 import com.__buy.user_service.entity.RefreshToken;
@@ -28,7 +27,7 @@ public class AuthServiceImpl implements AuthService {
     private final JwtService jwtService;
 
     @Auditable(action = AuditAction.CREATED, entityId = "#result.user.id")
-    public AuthResponse register(RegisterRequest request) {
+    public AuthResult register(RegisterRequest request) {
 
         if (userRepository.findByEmail(request.email()).isPresent()) {
             throw new ConflictException("Email already exists");
@@ -46,13 +45,13 @@ public class AuthServiceImpl implements AuthService {
         String accessToken = jwtService.generateAccessToken(user);
         String refreshToken = jwtService.generateRefreshToken(user);
 
-        return new AuthResponse(
+        return new AuthResult(
                 accessToken,
                 refreshToken,
                 new UserResponse(user));
     }
 
-    public AuthResponse login(LoginRequest request) {
+    public AuthResult login(LoginRequest request) {
 
         User user = userRepository.findByEmail(request.email())
                 .orElseThrow(() -> new UnauthorizedException("Invalid credentials"));
@@ -64,16 +63,16 @@ public class AuthServiceImpl implements AuthService {
         String accessToken = jwtService.generateAccessToken(user);
         String refreshToken = jwtService.generateRefreshToken(user);
 
-        return new AuthResponse(
+        return new AuthResult(
                 accessToken,
                 refreshToken,
                 new UserResponse(user));
     }
 
     @Override
-    public AuthResponse refreshToken(RefreshTokenRequest request) {
+    public AuthResult refreshToken(String token) {
 
-        RefreshToken refreshToken = jwtService.validateRefreshToken(request.refreshToken());
+        RefreshToken refreshToken = jwtService.validateRefreshToken(token);
 
         User user = userRepository.findById(refreshToken.getUserId())
                 .orElseThrow(() -> new UnauthorizedException("User not found"));
@@ -81,7 +80,7 @@ public class AuthServiceImpl implements AuthService {
         String accessToken = jwtService.generateAccessToken(user);
         String newRefreshToken = jwtService.generateRefreshToken(user);
 
-        return new AuthResponse(
+        return new AuthResult(
                 accessToken,
                 newRefreshToken,
                 new UserResponse(user));

@@ -22,12 +22,7 @@ export interface UserWidget {
 
 export interface AuthResponse {
   accessToken: string;
-  refreshToken: string;
   user: User;
-}
-
-export interface RefreshTokenRequest {
-  refreshToken: string;
 }
 
 export interface LoginRequest {
