@@ -19,6 +19,7 @@ import { MediaImage } from "@core/models/media.model";
 import { ConfirmDialogComponent } from "@shared/components/confirm-dialog.component";
 import { LoadingSpinnerComponent } from "@shared/components/loading-spinner.component";
 import { EmptyStateComponent } from "@shared/components/empty-state.component";
+import { CurrentUserService } from "@core/services/current-user.service";
 
 @Component({
   selector: "app-media-management",
@@ -41,7 +42,9 @@ import { EmptyStateComponent } from "@shared/components/empty-state.component";
       <div class="header-row">
         <div>
           <h1 class="page-title">Media Management</h1>
-          <p class="page-subtitle">Inspect and clean up images uploaded across your posts and profile.</p>
+          <p class="page-subtitle">
+            Inspect and clean up images uploaded across your posts and profile.
+          </p>
         </div>
         <button mat-stroked-button (click)="load()" class="refresh-btn">
           <mat-icon>refresh</mat-icon> Refresh
@@ -49,125 +52,137 @@ import { EmptyStateComponent } from "@shared/components/empty-state.component";
       </div>
 
       @if (loading()) {
-        <app-loading-spinner />
+      <app-loading-spinner />
       } @else if (!items().length) {
-        <app-empty-state
-          icon="collections"
-          title="No media files found"
-          description="You haven't uploaded any media images yet."
-        />
+      <app-empty-state
+        icon="collections"
+        title="No media files found"
+        description="You haven't uploaded any media images yet."
+      />
       } @else {
-        <div class="media-grid">
-          @for (item of items(); track item.id) {
-            <div class="media-card app-card">
-              <div class="media-preview-container">
-                <img
-                  [src]="getImageUrl(item.id)"
-                  [alt]="item.id"
-                  class="media-img"
-                  loading="lazy"
-                  (click)="previewImage(item)"
-                />
-                <div class="media-overlay">
-                  <button
-                    mat-mini-fab
-                    color="primary"
-                    (click)="previewImage(item)"
-                    matTooltip="Inspect Image"
-                  >
-                    <mat-icon>visibility</mat-icon>
-                  </button>
-                  <button
-                    mat-mini-fab
-                    color="warn"
-                    (click)="removeMedia(item)"
-                    matTooltip="Delete Image"
-                  >
-                    <mat-icon>delete</mat-icon>
-                  </button>
-                </div>
-              </div>
-
-              <div class="media-info">
-                <div class="info-row">
-                  <span class="media-id" matTooltip="Media ID: {{ item.id }}">
-                    <mat-icon inline>tag</mat-icon> {{ item.id | slice:0:12 }}...
-                  </span>
-                  @if (item.productId) {
-                    <a
-                      [routerLink]="['/products', item.productId]"
-                      class="product-link-chip"
-                      matTooltip="Linked Product: {{ item.productId }}"
-                    >
-                      <mat-icon inline>shopping_bag</mat-icon> Product
-                    </a>
-                  } @else {
-                    <span class="avatar-chip">
-                      <mat-icon inline>account_circle</mat-icon> User Media
-                    </span>
-                  }
-                </div>
-
-                <div class="actions-row">
-                  <button
-                    mat-button
-                    color="accent"
-                    class="action-btn"
-                    (click)="previewImage(item)"
-                  >
-                    <mat-icon>zoom_in</mat-icon> Inspect
-                  </button>
-                  <button
-                    mat-button
-                    color="warn"
-                    class="action-btn"
-                    (click)="removeMedia(item)"
-                  >
-                    <mat-icon>delete_outline</mat-icon> Delete
-                  </button>
-                </div>
-              </div>
-            </div>
-          }
-        </div>
-
-        <div class="paginator-wrap app-card">
-          <mat-paginator
-            [length]="total()"
-            [pageSize]="pageSize()"
-            [pageIndex]="page() - 1"
-            [pageSizeOptions]="[12, 24, 48]"
-            (page)="onPage($event)"
-          />
-        </div>
-      }
-
-      <!-- Lightbox Preview Modal -->
-      @if (selectedImage()) {
-        <div class="lightbox-backdrop" (click)="closePreview()">
-          <div class="lightbox-content" (click)="$event.stopPropagation()">
-            <div class="lightbox-header">
-              <span class="lightbox-title">Image Details</span>
-              <button mat-icon-button (click)="closePreview()">
-                <mat-icon>close</mat-icon>
+      <div class="media-grid">
+        @for (item of items(); track item.id) {
+        <div class="media-card app-card">
+          <div class="media-preview-container">
+            <img
+              [src]="getImageUrl(item.id)"
+              [alt]="item.id"
+              class="media-img"
+              loading="lazy"
+              (click)="previewImage(item)"
+            />
+            <div class="media-overlay">
+              <button
+                mat-mini-fab
+                color="primary"
+                (click)="previewImage(item)"
+                matTooltip="Inspect Image"
+              >
+                <mat-icon>visibility</mat-icon>
+              </button>
+              <button
+                mat-mini-fab
+                color="warn"
+                (click)="removeMedia(item)"
+                matTooltip="Delete Image"
+              >
+                <mat-icon>delete</mat-icon>
               </button>
             </div>
-            <div class="lightbox-body">
-              <img [src]="getImageUrl(selectedImage()!.id)" [alt]="selectedImage()!.id" class="lightbox-img" />
+          </div>
+
+          <div class="media-info">
+            <div class="info-row">
+              <span class="media-id" matTooltip="Media ID: {{ item.id }}">
+                <mat-icon inline>tag</mat-icon>
+                {{ item.id | slice : 0 : 12 }}...
+              </span>
+              @if (item.productId) {
+              <a
+                [routerLink]="['/products', item.productId]"
+                class="product-link-chip"
+                matTooltip="Linked Product: {{ item.productId }}"
+              >
+                <mat-icon inline>shopping_bag</mat-icon> Product
+              </a>
+              } @else {
+              <span class="avatar-chip">
+                <mat-icon inline>account_circle</mat-icon> User Media
+              </span>
+              }
             </div>
-            <div class="lightbox-footer">
-              <div class="meta-details">
-                <p><strong>ID:</strong> {{ selectedImage()!.id }}</p>
-                @if (selectedImage()!.productId) {
-                  <p><strong>Linked Product ID:</strong> {{ selectedImage()!.productId }}</p>
-                }
-              </div>
-              <button mat-flat-button color="warn" (click)="removeMedia(selectedImage()!); closePreview()">
-                <mat-icon>delete</mat-icon> Delete Image
+
+            <div class="actions-row">
+              <button
+                mat-button
+                color="accent"
+                class="action-btn"
+                (click)="previewImage(item)"
+              >
+                <mat-icon>zoom_in</mat-icon> Inspect
+              </button>
+              <button
+                mat-button
+                color="warn"
+                class="action-btn"
+                (click)="removeMedia(item)"
+              >
+                <mat-icon>delete_outline</mat-icon> Delete
               </button>
             </div>
           </div>
         </div>
+        }
+      </div>
+
+      <div class="paginator-wrap app-card">
+        <mat-paginator
+          [length]="total()"
+          [pageSize]="pageSize()"
+          [pageIndex]="page() - 1"
+          [pageSizeOptions]="[12, 24, 48]"
+          (page)="onPage($event)"
+        />
+      </div>
+      }
+
+      <!-- Lightbox Preview Modal -->
+      @if (selectedImage()) {
+      <div class="lightbox-backdrop" (click)="closePreview()">
+        <div class="lightbox-content" (click)="$event.stopPropagation()">
+          <div class="lightbox-header">
+            <span class="lightbox-title">Image Details</span>
+            <button mat-icon-button (click)="closePreview()">
+              <mat-icon>close</mat-icon>
+            </button>
+          </div>
+          <div class="lightbox-body">
+            <img
+              [src]="getImageUrl(selectedImage()!.id)"
+              [alt]="selectedImage()!.id"
+              class="lightbox-img"
+            />
+          </div>
+          <div class="lightbox-footer">
+            <div class="meta-details">
+              <p><strong>ID:</strong> {{ selectedImage()!.id }}</p>
+              @if (selectedImage()!.productId) {
+              <p>
+                <strong>Linked Product ID:</strong>
+                {{ selectedImage()!.productId }}
+              </p>
+              }
+            </div>
+            <button
+              mat-flat-button
+              color="warn"
+              (click)="removeMedia(selectedImage()!); closePreview()"
+            >
+              <mat-icon>delete</mat-icon> Delete Image
+            </button>
+          </div>
+        </div>
+      </div>
       }
     </section>
   `,
@@ -215,7 +230,7 @@ import { EmptyStateComponent } from "@shared/components/empty-state.component";
       }
       .media-card:hover {
         transform: translateY(-4px);
-        box-shadow: 0 12px 24px -10px rgba(0,0,0,0.15);
+        box-shadow: 0 12px 24px -10px rgba(0, 0, 0, 0.15);
       }
       .media-preview-container {
         position: relative;
@@ -382,6 +397,7 @@ export class MediaManagementPage {
   private readonly auth = inject(AuthService);
   private readonly dialog = inject(MatDialog);
   private readonly notify = inject(NotificationService);
+  readonly currentUser = inject(CurrentUserService);
 
   readonly items = signal<MediaImage[]>([]);
   readonly total = signal(0);
@@ -395,7 +411,7 @@ export class MediaManagementPage {
   }
 
   load(): void {
-    const user = this.auth.user();
+    const user = this.currentUser.user();
     if (!user) return;
 
     this.loading.set(true);
@@ -437,7 +453,8 @@ export class MediaManagementPage {
       .open(ConfirmDialogComponent, {
         data: {
           title: "Delete Image",
-          message: "Are you sure you want to delete this media image? If it is used in a product, it will be unlinked automatically.",
+          message:
+            "Are you sure you want to delete this media image? If it is used in a product, it will be unlinked automatically.",
           danger: true,
           confirmLabel: "Delete",
         },

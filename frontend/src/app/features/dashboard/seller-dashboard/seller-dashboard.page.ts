@@ -14,6 +14,7 @@ import { ProductService } from "@core/services/product.service";
 import { Product } from "@core/models/product.model";
 import { ProductCardComponent } from "@shared/components/product-card.component";
 import { LoadingSpinnerComponent } from "@shared/components/loading-spinner.component";
+import { CurrentUserService } from "@core/services/current-user.service";
 
 @Component({
   selector: "app-seller-dashboard",
@@ -29,7 +30,7 @@ import { LoadingSpinnerComponent } from "@shared/components/loading-spinner.comp
   ],
   template: `
     <section class="container">
-      <h1>Welcome, {{ auth.user()?.name }}</h1>
+      <h1>Welcome, {{ currentUser.user()?.name }}</h1>
       <p class="muted">Here's a snapshot of your store.</p>
 
       <div class="stats">
@@ -136,6 +137,8 @@ import { LoadingSpinnerComponent } from "@shared/components/loading-spinner.comp
 export class SellerDashboardPage {
   readonly auth = inject(AuthService);
   private readonly svc = inject(ProductService);
+  readonly currentUser = inject(CurrentUserService);
+
   readonly items = signal<Product[]>([]);
   readonly loading = signal(true);
   readonly totalImages = computed(() =>
@@ -144,7 +147,7 @@ export class SellerDashboardPage {
   readonly latest = computed(() => this.items()[0]);
 
   constructor() {
-    this.svc.listBySeller(1, 50, this.auth.user()!.id).subscribe({
+    this.svc.listBySeller(1, 50, this.currentUser.user()!.id).subscribe({
       next: (r) => {
         this.items.set(r.content);
         this.loading.set(false);

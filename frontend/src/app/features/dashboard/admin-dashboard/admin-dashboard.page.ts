@@ -16,6 +16,7 @@ import { AuthService } from "@core/services/auth.service";
 import { ProductService } from "@core/services/product.service";
 
 import { LoadingSpinnerComponent } from "@shared/components/loading-spinner.component";
+import { CurrentUserService } from "@core/services/current-user.service";
 
 @Component({
   selector: "app-admin-dashboard",
@@ -34,7 +35,7 @@ import { LoadingSpinnerComponent } from "@shared/components/loading-spinner.comp
     } @else {
 
     <section class="container">
-      <h1>Welcome, {{ auth.user()?.name }}</h1>
+      <h1>Welcome, {{ currentUser.user()?.name }}</h1>
       <p class="muted">Marketplace overview.</p>
 
       <div class="stats">
@@ -106,6 +107,7 @@ export class AdminDashboardPage {
   private readonly productService = inject(ProductService);
   private readonly userService = inject(UserService);
   private readonly mediaService = inject(MediaService);
+  readonly currentUser = inject(CurrentUserService);
 
   readonly loading = signal(true);
 

@@ -24,7 +24,6 @@ export class UserService {
     return this.http.get<User>(API.base + API.users.byId(id));
   }
 
-
   getWidget(id: string): Observable<UserWidget> {
     return this.http.get<UserWidget>(API.base + API.users.widgetbyId(id));
   }
@@ -35,5 +34,9 @@ export class UserService {
 
   count(): Observable<number> {
     return this.http.get<number>(API.base + API.users.count);
+  }
+
+  me(): Observable<User> {
+    return this.http.get<User>(API.base + API.profile.me);
   }
 }

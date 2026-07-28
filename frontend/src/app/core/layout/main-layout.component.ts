@@ -13,6 +13,7 @@ import { MatMenuModule } from "@angular/material/menu";
 import { MatDividerModule } from "@angular/material/divider";
 import { AuthService } from "../services/auth.service";
 import { ThemeService } from "../services/theme.service";
+import { CurrentUserService } from "@core/services/current-user.service";
 
 @Component({
   selector: "app-main-layout",
@@ -74,7 +75,7 @@ import { ThemeService } from "../services/theme.service";
       @if (auth.isAuthenticated()) {
       <button mat-button [matMenuTriggerFor]="menu">
         <mat-icon>account_circle</mat-icon>
-        <span class="user-name">{{ auth.user()?.name }}</span>
+        <span class="user-name">{{ currentUser.user()?.name }}</span>
       </button>
       <mat-menu #menu="matMenu">
         <a mat-menu-item routerLink="/profile"
@@ -185,12 +186,13 @@ export class MainLayoutComponent {
   readonly auth = inject(AuthService);
   readonly theme = inject(ThemeService);
   readonly year = new Date().getFullYear();
+  readonly currentUser = inject(CurrentUserService);
 
   constructor() {
     effect(() => {
       console.log("AUTH", {
         authenticated: this.auth.isAuthenticated(),
-        user: this.auth.user(),
+        user: this.currentUser.user(),
       });
     });
   }
