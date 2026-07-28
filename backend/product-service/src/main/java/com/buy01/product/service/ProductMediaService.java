@@ -22,7 +22,7 @@ public class ProductMediaService {
         List<String> imageIds = new ArrayList<>();
 
         for (MultipartFile image : images) {
-            MediaResponse media = mediaClient.upload(image, productId);
+            MediaResponse media = mediaClient.upload(image, productId, userId);
             imageIds.add(media.id());
         }
 

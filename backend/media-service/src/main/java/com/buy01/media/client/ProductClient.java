@@ -9,8 +9,8 @@ import org.springframework.web.bind.annotation.PathVariable;
 public interface ProductClient {
 
         @DeleteMapping("/products/{productId}/images/{imageId}")
-        ResponseEntity<Void> deleteImageFromProduct(
-                        @PathVariable("productId") String productId,
-                        @PathVariable("imageId") String imageId);
+        ResponseEntity<Void> removeImageFromProduct(
+                        @PathVariable String productId,
+                        @PathVariable String imageId);
 
 }

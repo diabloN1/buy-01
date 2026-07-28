@@ -235,7 +235,7 @@ public class MediaServiceImpl implements MediaService {
 
         private void notifyProductService(Media media) {
                 try {
-                        productClient.deleteImageFromProduct(
+                        productClient.removeImageFromProduct(
                                         media.getProductId(),
                                         media.getId());
 
