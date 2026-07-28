@@ -1,10 +1,9 @@
-import { ChangeDetectionStrategy, Component, Input } from '@angular/core';
+import { Component, Input } from '@angular/core';
 import { AbstractControl } from '@angular/forms';
 
 @Component({
   selector: 'app-field-error',
   standalone: true,
-  changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     @if (control && control.touched && control.errors) {
       <div class="error-text">
