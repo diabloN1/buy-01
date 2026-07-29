@@ -1,6 +1,7 @@
 import {
   ChangeDetectionStrategy,
   Component,
+  effect,
   inject,
   signal,
 } from "@angular/core";
@@ -180,8 +181,36 @@ export class SellerProductsPage {
   readonly loading = signal(true);
 
   constructor() {
-    this.load();
+    effect(() => {
+      const user = this.currentUser.user();
+
+      if (!user) {
+        return;
+      }
+
+      this.load();
+    });
   }
+
+  private load(): void {
+    const user = this.currentUser.user();
+
+    if (!user) {
+      return;
+    }
+
+    this.loading.set(true);
+
+    this.svc.listBySeller(this.page(), this.pageSize(), user.id).subscribe({
+      next: (r) => {
+        this.items.set(r.content);
+        this.total.set(r.totalElements);
+        this.loading.set(false);
+      },
+      error: () => this.loading.set(false),
+    });
+  }
+
   trackById = (_: number, p: Product) => p.id;
   onPage(e: PageEvent) {
     this.page.set(e.pageIndex + 1);
@@ -189,23 +218,7 @@ export class SellerProductsPage {
     this.load();
   }
 
-  private load() {
-    this.loading.set(true);
-    this.svc
-      .listBySeller(this.page(), this.pageSize(), this.currentUser.user()!.id)
-      .subscribe({
-        next: (r) => {
-          console.log("listBySeller response: ", r);
-
-          this.items.set(r.content);
-          this.total.set(r.totalElements);
-          this.loading.set(false);
-        },
-        error: () => this.loading.set(false),
-      });
-  }
-
-  remove(p: Product) {
+  remove(p: Product): void {
     this.dialog
       .open(ConfirmDialogComponent, {
         data: {
@@ -217,7 +230,10 @@ export class SellerProductsPage {
       })
       .afterClosed()
       .subscribe((ok) => {
-        if (!ok) return;
+        if (!ok) {
+          return;
+        }
+
         this.svc.delete(p.id).subscribe(() => {
           this.notify.success("Product deleted");
           this.load();

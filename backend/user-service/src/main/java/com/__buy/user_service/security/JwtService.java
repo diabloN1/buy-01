@@ -12,6 +12,7 @@ import com.__buy.user_service.entity.User;
 import com.__buy.user_service.exception.UnauthorizedException;
 import com.__buy.user_service.repository.RefreshTokenRepository;
 
+import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.Date;
 import java.util.UUID;
@@ -27,7 +28,7 @@ public class JwtService {
 
     private final RefreshTokenRepository refreshTokenRepository;
 
-    private static final long ACCESS_TOKEN_EXPIRATION = 1000L * 60 * 15;
+    private static final long ACCESS_TOKEN_EXPIRATION = Duration.ofMinutes(1).toMillis();
 
     private static final long REFRESH_TOKEN_EXPIRATION_DAYS = 30;
 

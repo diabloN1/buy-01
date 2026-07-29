@@ -189,11 +189,17 @@ export class MainLayoutComponent {
   readonly currentUser = inject(CurrentUserService);
 
   constructor() {
+    let loaded = false;
     effect(() => {
-      console.log("AUTH", {
-        authenticated: this.auth.isAuthenticated(),
-        user: this.currentUser.user(),
-      });
+      if (!this.auth.isAuthenticated()) {
+        loaded = false;
+        this.currentUser.clear();
+        return;
+      }
+      if (!loaded) {
+        loaded = true;
+        this.currentUser.load();
+      }
     });
   }
 }

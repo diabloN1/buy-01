@@ -2,9 +2,8 @@ import { Injectable, computed, inject, signal } from "@angular/core";
 import { HttpClient } from "@angular/common/http";
 import { Router } from "@angular/router";
 import { finalize, Observable, shareReplay, tap } from "rxjs";
-import { CurrentUserService } from "./current-user.service";
 
-import { API } from "../config/api.config";
+import { API } from "@core/config/api.config";
 import {
   AuthResponse,
   LoginRequest,
@@ -17,14 +16,12 @@ import { decodeJwt, isExpired } from "./jwt.util";
 
 @Injectable({ providedIn: "root" })
 export class AuthService {
-  private readonly currentUser = inject(CurrentUserService);
   private readonly http = inject(HttpClient);
   private readonly storage = inject(TokenStorage);
   private readonly router = inject(Router);
 
   private readonly _token = signal<string | null>(this.storage.getToken());
 
-  private refreshInProgress = false;
   private refreshObservable?: Observable<AuthResponse>;
 
   readonly token = this._token.asReadonly();
@@ -52,10 +49,6 @@ export class AuthService {
 
   readonly isAdmin = computed(() => this.role() === "ADMIN");
 
-  constructor() {
-    this.validateSession();
-  }
-
   login(body: LoginRequest): Observable<AuthResponse> {
     return this.http
       .post<AuthResponse>(API.base + API.auth.login, body, {
@@ -64,7 +57,6 @@ export class AuthService {
       .pipe(
         tap((r) => {
           this.setSession(r);
-          this.currentUser.load();
         })
       );
   }
@@ -77,25 +69,16 @@ export class AuthService {
       .pipe(
         tap((r) => {
           this.setSession(r);
-          this.currentUser.load();
         })
       );
   }
 
   logout(redirect = true): Observable<void> {
     return this.http
-      .post<void>(
-        API.base + API.auth.logout,
-        {},
-        {
-          withCredentials: true,
-        }
-      )
+      .post<void>(API.base + API.auth.logout, {}, { withCredentials: true })
       .pipe(
         tap(() => {
-          this.storage.clear();
-          this._token.set(null);
-          this.currentUser.clear();
+          this.clearSession();
 
           if (redirect) {
             this.router.navigateByUrl("/auth/login");
@@ -109,49 +92,48 @@ export class AuthService {
     return !!role && roles.includes(role);
   }
 
-  private validateSession(): void {
-    const token = this.storage.getToken();
-
-    const stale = !token || isExpired(token);
-
-    if (stale) {
-      this.storage.clear();
-      this._token.set(null);
-    } else {
-      this._token.set(token);
-      this.currentUser.load();
-    }
-  }
-
   refresh(): Observable<AuthResponse> {
-    if (this.refreshInProgress && this.refreshObservable) {
+    if (this.refreshObservable) {
       return this.refreshObservable;
     }
-
-    this.refreshInProgress = true;
 
     this.refreshObservable = this.http
       .post<AuthResponse>(
         API.base + API.auth.refresh,
         {},
-        {
-          withCredentials: true,
-        }
+        { withCredentials: true }
       )
       .pipe(
-        tap((response) => this.setSession(response)),
-        finalize(() => {
-          this.refreshInProgress = false;
-          this.refreshObservable = undefined;
-        }),
+        tap((auth) => this.setSession(auth)),
+        finalize(() => (this.refreshObservable = undefined)),
         shareReplay(1)
       );
 
     return this.refreshObservable;
   }
 
-  private setSession(res: AuthResponse): void {
-    this.storage.setToken(res.accessToken);
-    this._token.set(res.accessToken);
+  setSession(auth: AuthResponse): void {
+    console.log("Saving token", auth.accessToken);
+
+    this.storage.setToken(auth.accessToken);
+    this._token.set(auth.accessToken);
+
+    console.log("Signal token:", this._token());
+    console.log("Storage token:", this.storage.getToken());
+  }
+
+  restoreToken(): void {
+    const token = this.storage.getToken();
+
+    if (!token) {
+      return;
+    }
+
+    this._token.set(token);
+  }
+
+  clearSession(): void {
+    this.storage.clear();
+    this._token.set(null);
   }
 }

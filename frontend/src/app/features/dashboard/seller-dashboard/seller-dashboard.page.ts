@@ -2,6 +2,7 @@ import {
   ChangeDetectionStrategy,
   Component,
   computed,
+  effect,
   inject,
   signal,
 } from "@angular/core";
@@ -147,7 +148,27 @@ export class SellerDashboardPage {
   readonly latest = computed(() => this.items()[0]);
 
   constructor() {
-    this.svc.listBySeller(1, 50, this.currentUser.user()!.id).subscribe({
+    effect(() => {
+      const user = this.currentUser.user();
+
+      if (!user) {
+        return;
+      }
+
+      this.load();
+    });
+  }
+
+  private load(): void {
+    const user = this.currentUser.user();
+
+    if (!user) {
+      return;
+    }
+
+    this.loading.set(true);
+
+    this.svc.listBySeller(1, 50, user.id).subscribe({
       next: (r) => {
         this.items.set(r.content);
         this.loading.set(false);

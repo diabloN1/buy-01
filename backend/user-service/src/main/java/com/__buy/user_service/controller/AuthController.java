@@ -16,6 +16,7 @@ import com.__buy.user_service.dto.AuthResponse;
 import com.__buy.user_service.dto.AuthResult;
 import com.__buy.user_service.dto.LoginRequest;
 import com.__buy.user_service.dto.RegisterRequest;
+import com.__buy.user_service.exception.UnauthorizedException;
 import com.__buy.user_service.service.AuthService;
 
 @RestController
@@ -58,9 +59,12 @@ public class AuthController {
 
     @PostMapping("/refresh")
     public AuthResponse refreshToken(
-            @CookieValue("refreshToken") String refreshToken,
+            @CookieValue(name = "refreshToken", required = false) String refreshToken,
             HttpServletResponse response) {
 
+        if (refreshToken == null) {
+            throw new UnauthorizedException("Missing refresh token");
+        }
         AuthResult auth = authService.refreshToken(refreshToken);
 
         addRefreshCookie(response, auth.refreshToken());
