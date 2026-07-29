@@ -11,8 +11,8 @@ import { MatButtonModule } from "@angular/material/button";
 import { MatIconModule } from "@angular/material/icon";
 import { MatMenuModule } from "@angular/material/menu";
 import { MatDividerModule } from "@angular/material/divider";
-import { AuthService } from "../services/auth.service";
-import { ThemeService } from "../services/theme.service";
+import { AuthService } from "@core/services/auth.service";
+import { ThemeService } from "@core/services/theme.service";
 import { CurrentUserService } from "@core/services/current-user.service";
 
 @Component({
@@ -188,7 +188,6 @@ export class MainLayoutComponent {
   readonly year = new Date().getFullYear();
   readonly currentUser = inject(CurrentUserService);
 
-  
   constructor() {
     let loaded = false;
     effect(() => {

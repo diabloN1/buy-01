@@ -1,8 +1,8 @@
 import { Injectable, inject } from "@angular/core";
 import { HttpClient, HttpParams } from "@angular/common/http";
 import { Observable } from "rxjs";
-import { API } from "../config/api.config";
-import { Product, ProductUpsert } from "../models/product.model";
+import { API } from "@core/config/api.config";
+import { Product, ProductUpsert } from "@core/models/product.model";
 import { Paginated } from "@core/models/paginated.model";
 
 @Injectable({ providedIn: "root" })
@@ -17,11 +17,18 @@ export class ProductService {
     });
   }
 
-  listBySeller(page = 1, pageSize = 12, sellerId: string): Observable<Paginated<Product>> {
+  listBySeller(
+    page = 1,
+    pageSize = 12,
+    sellerId: string
+  ): Observable<Paginated<Product>> {
     let params = new HttpParams().set("page", page - 1).set("size", pageSize);
-    return this.http.get<Paginated<Product>>(API.base + API.products.bySeller(sellerId), {
-      params,
-    });
+    return this.http.get<Paginated<Product>>(
+      API.base + API.products.bySeller(sellerId),
+      {
+        params,
+      }
+    );
   }
 
   get(id: string): Observable<Product> {
@@ -35,7 +42,7 @@ export class ProductService {
       "product",
       new Blob([JSON.stringify(body)], {
         type: "application/json",
-      }),
+      })
     );
 
     images.forEach((file) => {
@@ -49,7 +56,7 @@ export class ProductService {
     id: string,
     body: ProductUpsert,
     images: File[],
-    deletedImageIds: string[],
+    deletedImageIds: string[]
   ): Observable<Product> {
     const formData = new FormData();
 
@@ -57,7 +64,7 @@ export class ProductService {
       "product",
       new Blob([JSON.stringify(body)], {
         type: "application/json",
-      }),
+      })
     );
 
     images.forEach((image) => {

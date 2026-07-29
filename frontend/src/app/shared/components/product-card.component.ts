@@ -4,7 +4,7 @@ import { RouterLink } from "@angular/router";
 import { MatButtonModule } from "@angular/material/button";
 import { MatIconModule } from "@angular/material/icon";
 import { Product } from "@core/models/product.model";
-import { SafeUrlPipe } from "../pipes/safe-url.pipe";
+import { SafeUrlPipe } from "@shared/pipes/safe-url.pipe";
 
 @Component({
   selector: "app-product-card",

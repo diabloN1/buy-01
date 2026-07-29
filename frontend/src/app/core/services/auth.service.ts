@@ -9,7 +9,7 @@ import {
   LoginRequest,
   RegisterRequest,
   UserRole,
-} from "../models/user.model";
+} from "@core/models/user.model";
 
 import { TokenStorage } from "./token.storage";
 import { decodeJwt, isExpired } from "./jwt.util";

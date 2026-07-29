@@ -2,9 +2,9 @@ import { HttpErrorResponse, HttpInterceptorFn } from "@angular/common/http";
 import { Injector, inject } from "@angular/core";
 import { catchError, switchMap, throwError } from "rxjs";
 
-import { API } from "../config/api.config";
-import { AuthService } from "../services/auth.service";
-import { TokenStorage } from "../services/token.storage";
+import { API } from "@core/config/api.config";
+import { AuthService } from "@core/services/auth.service";
+import { TokenStorage } from "@core/services/token.storage";
 
 export const tokenInterceptor: HttpInterceptorFn = (req, next) => {
   const injector = inject(Injector);
@@ -20,7 +20,6 @@ export const tokenInterceptor: HttpInterceptorFn = (req, next) => {
     req.url.includes(API.auth.login) ||
     req.url.includes(API.auth.register) ||
     req.url.includes(API.auth.refresh);
-
 
   const request =
     token && !isAuthRequest

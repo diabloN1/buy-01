@@ -12,7 +12,6 @@ import { MatIconModule } from "@angular/material/icon";
 import { toSignal } from "@angular/core/rxjs-interop";
 import { shareReplay, switchMap } from "rxjs";
 import { ProductService } from "@core/services/product.service";
-import { AuthService } from "@core/services/auth.service";
 import { Product } from "@core/models/product.model";
 import { LoadingSpinnerComponent } from "@shared/components/loading-spinner.component";
 import { SafeUrlPipe } from "@shared/pipes/safe-url.pipe";
