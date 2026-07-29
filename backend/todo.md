@@ -1,6 +1,6 @@
 [X] - (angular) - no error when invalid credentials (login)
 [X] - (angular) - no error when bad password or email (register)
-[ ] - (angular) - refreshToken should be store in cookie http only
+[X] - (angular) - refreshToken should be store in cookie http only
 [X] - (angular) - user data should't be stored in session storage (it can be modified from there)
 
 
