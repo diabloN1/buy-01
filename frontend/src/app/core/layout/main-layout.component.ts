@@ -82,7 +82,7 @@ import { CurrentUserService } from "@core/services/current-user.service";
           ><mat-icon>person</mat-icon>Profile</a
         >
         <mat-divider />
-        <button mat-menu-item (click)="auth.logout()">
+        <button mat-menu-item (click)="logout()">
           <mat-icon>logout</mat-icon>Log out
         </button>
       </mat-menu>
@@ -188,6 +188,7 @@ export class MainLayoutComponent {
   readonly year = new Date().getFullYear();
   readonly currentUser = inject(CurrentUserService);
 
+  
   constructor() {
     let loaded = false;
     effect(() => {
@@ -201,5 +202,8 @@ export class MainLayoutComponent {
         this.currentUser.load();
       }
     });
+  }
+  logout() {
+    this.auth.logout().subscribe();
   }
 }

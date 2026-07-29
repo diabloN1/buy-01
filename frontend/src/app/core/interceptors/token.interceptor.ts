@@ -21,12 +21,6 @@ export const tokenInterceptor: HttpInterceptorFn = (req, next) => {
     req.url.includes(API.auth.register) ||
     req.url.includes(API.auth.refresh);
 
-  console.log("Request:", req.url);
-  console.log("Is auth request:", isAuthRequest);
-
-  if (token && !isAuthRequest) {
-    console.log("Adding Authorization header");
-  }
 
   const request =
     token && !isAuthRequest
@@ -36,8 +30,6 @@ export const tokenInterceptor: HttpInterceptorFn = (req, next) => {
           },
         })
       : req;
-
-  console.log(request.headers.get("Authorization"));
 
   return next(request).pipe(
     catchError((error: HttpErrorResponse) => {
