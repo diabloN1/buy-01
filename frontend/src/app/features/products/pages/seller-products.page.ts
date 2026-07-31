@@ -136,7 +136,8 @@ import { CurrentUserService } from "@core/services/current-user.service";
   styles: [
     `
       .table-wrap {
-        overflow: hidden;
+        overflow-x: auto;
+        overflow-y: hidden;
         border: 1px solid var(--app-border);
         border-radius: var(--app-radius);
         box-shadow: var(--app-shadow);
@@ -146,6 +147,7 @@ import { CurrentUserService } from "@core/services/current-user.service";
 
       table {
         width: 100%;
+        min-width: 700px;
         border-collapse: separate;
         border-spacing: 0;
         background-color: var(--app-primary-light);
@@ -284,6 +286,7 @@ import { CurrentUserService } from "@core/services/current-user.service";
       mat-paginator {
         border-top: 1px solid var(--app-border);
         background-color: var(--app-primary-light);
+        min-width: 700px;
       }
     `,
   ],
@@ -325,7 +328,7 @@ export class SellerProductsPage {
 
     this.svc.listBySeller(this.page(), this.pageSize(), user.id).subscribe({
       next: (r) => {
-        console.log('r.content :', r.content)
+        console.log("r.content :", r.content);
         this.items.set(r.content);
         this.total.set(r.totalElements);
         this.loading.set(false);
