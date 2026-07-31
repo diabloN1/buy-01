@@ -14,19 +14,19 @@ export class SessionService {
     const token = this.auth.token();
 
     if (!token) {
-      return of(void 0);
+      return of(undefined);
     }
 
     if (!isExpired(token)) {
-      return of(void 0);
+      return of(undefined);
     }
 
     return this.auth.refresh().pipe(
-      switchMap(() => of(void 0)),
+      switchMap(() => of(undefined)),
       catchError(() => {
         this.auth.clearSession();
         return EMPTY;
-      })
+      }),
     );
   }
 }

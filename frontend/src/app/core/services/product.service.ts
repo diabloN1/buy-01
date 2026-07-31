@@ -20,14 +20,14 @@ export class ProductService {
   listBySeller(
     page = 1,
     pageSize = 12,
-    sellerId: string
+    sellerId: string,
   ): Observable<Paginated<Product>> {
     let params = new HttpParams().set("page", page - 1).set("size", pageSize);
     return this.http.get<Paginated<Product>>(
       API.base + API.products.bySeller(sellerId),
       {
         params,
-      }
+      },
     );
   }
 
@@ -42,7 +42,7 @@ export class ProductService {
       "product",
       new Blob([JSON.stringify(body)], {
         type: "application/json",
-      })
+      }),
     );
 
     images.forEach((file) => {
@@ -56,7 +56,7 @@ export class ProductService {
     id: string,
     body: ProductUpsert,
     images: File[],
-    deletedImageIds: string[]
+    deletedImageIds: string[],
   ): Observable<Product> {
     const formData = new FormData();
 
@@ -64,7 +64,7 @@ export class ProductService {
       "product",
       new Blob([JSON.stringify(body)], {
         type: "application/json",
-      })
+      }),
     );
 
     images.forEach((image) => {
