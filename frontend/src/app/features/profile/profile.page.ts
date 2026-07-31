@@ -35,69 +35,70 @@ import { CurrentUserService } from "@core/services/current-user.service";
     <section class="container">
       <h1>Profile</h1>
       @if (loading()) {
-      <app-loading-spinner />
+        <app-loading-spinner />
       } @else {
-      <div class="app-card panel">
-        <div class="avatar-row">
-          <div class="avatar">
+        <div class="app-card panel">
+          <div class="avatar-row">
+            <div class="avatar">
+              @if (avatarUrl()) {
+                <img [src]="avatarUrl()!" alt="avatar" />
+              } @else {
+                <mat-icon>person</mat-icon>
+              }
+            </div>
             @if (avatarUrl()) {
-            <img [src]="avatarUrl()!" alt="avatar" />
-            } @else {
-            <mat-icon>person</mat-icon>
+              <button mat-button color="warn" (click)="deleteAvatar()">
+                <mat-icon>delete</mat-icon>
+                Remove avatar
+              </button>
             }
+            <div>
+              <input
+                type="file"
+                hidden
+                accept="image/*"
+                #f
+                (change)="uploadAvatar(f)"
+              />
+              <button
+                mat-stroked-button
+                (click)="f.click()"
+                [disabled]="uploading()"
+              >
+                <mat-icon>photo_camera</mat-icon>
+                {{ uploading() ? "Uploading…" : "Change avatar" }}
+              </button>
+            </div>
           </div>
-          @if (avatarUrl()) {
-          <button mat-button color="warn" (click)="deleteAvatar()">
-            <mat-icon>delete</mat-icon>
-            Remove avatar
-          </button>
-          }
-          <div>
-            <input
-              type="file"
-              hidden
-              accept="image/*"
-              #f
-              (change)="uploadAvatar(f)"
-            />
-            <button
-              mat-stroked-button
-              (click)="f.click()"
-              [disabled]="uploading()"
-            >
-              <mat-icon>photo_camera</mat-icon>
-              {{ uploading() ? "Uploading…" : "Change avatar" }}
-            </button>
-          </div>
+
+          <form [formGroup]="form" (ngSubmit)="save()" class="stack">
+            <mat-form-field appearance="outline"
+              ><mat-label>Name</mat-label>
+              <input matInput formControlName="name"
+            /></mat-form-field>
+            <app-field-error [control]="form.controls.name" />
+
+            <mat-form-field appearance="outline"
+              ><mat-label>Email</mat-label>
+              <input
+                matInput
+                type="email"
+                formControlName="email"
+                [readonly]="true"
+            /></mat-form-field>
+
+            <div class="row">
+              <span class="grow"></span>
+              <button
+                mat-flat-button
+                color="primary"
+                [disabled]="form.invalid || saving()"
+              >
+                {{ saving() ? "Saving…" : "Save changes" }}
+              </button>
+            </div>
+          </form>
         </div>
-
-        <form [formGroup]="form" (ngSubmit)="save()" class="stack">
-          <mat-form-field appearance="outline"
-            ><mat-label>Name</mat-label> <input matInput formControlName="name"
-          /></mat-form-field>
-          <app-field-error [control]="form.controls.name" />
-
-          <mat-form-field appearance="outline"
-            ><mat-label>Email</mat-label>
-            <input
-              matInput
-              type="email"
-              formControlName="email"
-              [readonly]="true"
-          /></mat-form-field>
-
-          <div class="row">
-            <span class="grow"></span>
-            <button
-              mat-flat-button
-              color="primary"
-              [disabled]="form.invalid || saving()"
-            >
-              {{ saving() ? "Saving…" : "Save changes" }}
-            </button>
-          </div>
-        </form>
-      </div>
       }
     </section>
   `,
@@ -107,16 +108,22 @@ import { CurrentUserService } from "@core/services/current-user.service";
         padding: 32px;
         margin-top: 24px;
         max-width: 640px;
+        width: 100%;
+        box-sizing: border-box;
       }
+
       .avatar-row {
         display: flex;
         gap: 20px;
         align-items: center;
         margin-bottom: 28px;
+        flex-wrap: wrap;
       }
+
       .avatar {
         width: 90px;
         height: 90px;
+        flex: 0 0 90px;
         border-radius: 50%;
         background: var(--app-bg);
         display: flex;
@@ -127,21 +134,90 @@ import { CurrentUserService } from "@core/services/current-user.service";
         box-shadow: var(--app-shadow);
         transition: all 0.25s ease;
       }
+
       .avatar:hover {
         border-color: var(--app-primary);
         transform: scale(1.02);
       }
+
       .avatar img {
         width: 100%;
         height: 100%;
         object-fit: cover;
       }
+
       .avatar mat-icon {
         font-size: 44px;
         width: 44px;
         height: 44px;
         color: var(--app-muted);
         opacity: 0.7;
+      }
+
+      .stack {
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+      }
+
+      .row {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        margin-top: 12px;
+      }
+
+      .grow {
+        flex: 1;
+      }
+
+      @media (max-width: 768px) {
+        .panel {
+          padding: 24px;
+        }
+
+        .avatar-row {
+          gap: 16px;
+        }
+      }
+
+      @media (max-width: 600px) {
+        .panel {
+          padding: 20px;
+          margin-top: 16px;
+        }
+
+        .avatar-row {
+          flex-direction: column;
+          align-items: stretch;
+          gap: 12px;
+        }
+
+        .avatar {
+          align-self: center;
+          width: 80px;
+          height: 80px;
+          flex-basis: 80px;
+        }
+
+        .avatar-row > button,
+        .avatar-row > div:last-child {
+          width: 100%;
+        }
+
+        .avatar-row > button,
+        .avatar-row > div:last-child button {
+          width: 100%;
+        }
+
+        .row {
+          flex-direction: column-reverse;
+          align-items: stretch;
+        }
+
+        .row button {
+          width: 100%;
+        }
       }
     `,
   ],
@@ -195,8 +271,6 @@ export class ProfilePage {
     if (file.size > 2 * 1024 * 1024) {
       return this.notify.error("Max 2 MB");
     }
-
-    this.uploading.set(true);
 
     this.uploading.set(true);
 

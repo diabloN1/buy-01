@@ -47,8 +47,8 @@ import { ImagePreviewComponent } from "@shared/components/image-preview.componen
             Inspect and clean up images uploaded across your posts and profile.
           </p>
         </div>
-        <button mat-stroked-button (click)="load()" class="refresh-btn">
-          <mat-icon>refresh</mat-icon> Refresh
+        <button mat-stroked-button (click)="load()" class="refresh-btn hide-small-screen">
+          <mat-icon>refresh</mat-icon>Refresh
         </button>
       </div>
 
@@ -385,6 +385,16 @@ import { ImagePreviewComponent } from "@shared/components/image-preview.componen
       }
       mat-paginator {
         background-color: transparent;
+      }
+
+      .hide-small-screen {
+        display: inline;
+      }
+
+      @media (max-width: 576px) {
+        .hide-small-screen {
+          display: none;
+        }
       }
     `,
   ],
