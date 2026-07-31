@@ -13,6 +13,7 @@ import { Product } from "@core/models/product.model";
 import { ProductCardComponent } from "@shared/components/product-card.component";
 import { LoadingSpinnerComponent } from "@shared/components/loading-spinner.component";
 import { EmptyStateComponent } from "@shared/components/empty-state.component";
+import { AuthService } from "@core/services/auth.service";
 
 @Component({
   selector: "app-home",
@@ -39,9 +40,15 @@ import { EmptyStateComponent } from "@shared/components/empty-state.component";
             <a mat-flat-button color="primary" routerLink="/products"
               >Browse products</a
             >
-            <a mat-stroked-button routerLink="/auth/register"
-              >Become a seller</a
-            >
+            @if (authSvc.isAuthenticated()) {
+              <a mat-stroked-button routerLink="/profile">
+                View your profile
+              </a>
+            } @else {
+              <a mat-stroked-button routerLink="/auth/register">
+                Become a seller
+              </a>
+            }
           </div>
         </div>
       </div>
@@ -53,24 +60,28 @@ import { EmptyStateComponent } from "@shared/components/empty-state.component";
           >See all <mat-icon>arrow_forward</mat-icon></a
         >
       </div>
-      @if (loading()) { <app-loading-spinner label="Loading products…" /> }
-      @else if (!items().length) {
-      <app-empty-state
-        icon="storefront"
-        title="No products yet"
-        description="Check back soon."
-      />
+      @if (loading()) {
+        <app-loading-spinner label="Loading products…" />
+      } @else if (!items().length) {
+        <app-empty-state
+          icon="storefront"
+          title="No products yet"
+          description="Check back soon."
+        />
       } @else {
-      <div class="grid">
-        @for (p of items(); track p.id) { <app-product-card [product]="p" /> }
-      </div>
+        <div class="grid">
+          @for (p of items(); track p.id) {
+            <app-product-card [product]="p" />
+          }
+        </div>
       }
     </section>
   `,
   styles: [
     `
       .hero {
-        background: radial-gradient(
+        background:
+          radial-gradient(
             circle at 10% 20%,
             rgba(99, 102, 241, 0.08) 0%,
             transparent 60%
@@ -140,6 +151,7 @@ import { EmptyStateComponent } from "@shared/components/empty-state.component";
 })
 export class HomePage {
   private readonly svc = inject(ProductService);
+  readonly authSvc = inject(AuthService);
   readonly items = signal<Product[]>([]);
   readonly loading = signal(true);
   constructor() {

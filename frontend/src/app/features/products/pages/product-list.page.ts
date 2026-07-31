@@ -43,24 +43,27 @@ import { EmptyStateComponent } from "@shared/components/empty-state.component";
           <input matInput [formControl]="q" placeholder="Search products…" />
         </mat-form-field>
       </div>
-      @if (loading()) { <app-loading-spinner label="Loading…" /> } @else if
-      (!items().length) {
-      <app-empty-state
-        icon="search_off"
-        title="No products found"
-        description="Try a different search."
-      />
+      @if (loading()) {
+        <app-loading-spinner label="Loading…" />
+      } @else if (!items().length) {
+        <app-empty-state
+          icon="search_off"
+          title="No products found"
+          description="Try a different search."
+        />
       } @else {
-      <div class="grid">
-        @for (p of items(); track p.id) { <app-product-card [product]="p" /> }
-      </div>
-      <mat-paginator
-        [length]="total()"
-        [pageSize]="pageSize()"
-        [pageIndex]="page() - 1"
-        [pageSizeOptions]="[12, 24, 48]"
-        (page)="onPage($event)"
-      />
+        <div class="grid">
+          @for (p of items(); track p.id) {
+            <app-product-card [product]="p" />
+          }
+        </div>
+        <mat-paginator
+          [length]="total()"
+          [pageSize]="pageSize()"
+          [pageIndex]="page() - 1"
+          [pageSizeOptions]="[12, 24, 48]"
+          (page)="onPage($event)"
+        />
       }
     </section>
   `,

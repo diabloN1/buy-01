@@ -46,78 +46,90 @@ import { CurrentUserService } from "@core/services/current-user.service";
       </div>
 
       @if (loading()) {
-      <app-loading-spinner />
+        <app-loading-spinner />
       } @else if (!items().length) {
-      <app-empty-state
-        icon="inventory_2"
-        title="No products yet"
-        description="Create your first product."
-      />
-      } @else {
-      <div class="app-card table-wrap">
-        <table mat-table [dataSource]="items()" [trackBy]="trackById">
-          <ng-container matColumnDef="thumb"
-            ><th mat-header-cell *matHeaderCellDef></th>
-            <td mat-cell *matCellDef="let p">
-              @if (p.imageUrls && p.imageUrls[0]) {
-              <img [src]="p.imageUrls[0]" alt="" class="thumb" />
-              } @else {
-              <mat-icon>image</mat-icon>
-              }
-            </td></ng-container
-          >
-          <ng-container matColumnDef="name"
-            ><th mat-header-cell *matHeaderCellDef>Name</th>
-            <td mat-cell *matCellDef="let p">{{ p.name }}</td></ng-container
-          >
-          <ng-container matColumnDef="price"
-            ><th mat-header-cell *matHeaderCellDef>Price</th>
-            <td mat-cell *matCellDef="let p">
-              {{ p.price | currency }}
-            </td></ng-container
-          >
-          <ng-container matColumnDef="qty"
-            ><th mat-header-cell *matHeaderCellDef>Qty</th>
-            <td mat-cell *matCellDef="let p">
-              {{ p.quantity }}
-            </td></ng-container
-          >
-          <ng-container matColumnDef="actions"
-            ><th mat-header-cell *matHeaderCellDef></th>
-            <td mat-cell *matCellDef="let p">
-              <a
-                mat-icon-button
-                [routerLink]="['/products', p.id]"
-                aria-label="View"
-                ><mat-icon>visibility</mat-icon></a
-              >
-              <a
-                mat-icon-button
-                [routerLink]="['/seller/products', p.id, 'edit']"
-                aria-label="Edit"
-                ><mat-icon>edit</mat-icon></a
-              >
-              <button
-                mat-icon-button
-                color="warn"
-                (click)="remove(p)"
-                aria-label="Delete"
-              >
-                <mat-icon>delete</mat-icon>
-              </button>
-            </td></ng-container
-          >
-          <tr mat-header-row *matHeaderRowDef="cols"></tr>
-          <tr mat-row *matRowDef="let r; columns: cols"></tr>
-        </table>
-        <mat-paginator
-          [length]="total()"
-          [pageSize]="pageSize()"
-          [pageIndex]="page() - 1"
-          [pageSizeOptions]="[10, 25, 50]"
-          (page)="onPage($event)"
+        <app-empty-state
+          icon="inventory_2"
+          title="No products yet"
+          description="Create your first product."
         />
-      </div>
+      } @else {
+        <div class="app-card table-wrap">
+          <table mat-table [dataSource]="items()" [trackBy]="trackById">
+            <ng-container matColumnDef="thumb"
+              ><th mat-header-cell *matHeaderCellDef></th>
+              <td mat-cell *matCellDef="let p">
+                @if (p.images && p.images[0]) {
+                  <img [src]="p.images[0].url" alt="" class="thumb" />
+                } @else {
+                  <div class="thumb-placeholder">
+                    <mat-icon>image</mat-icon>
+                  </div>
+                }
+              </td></ng-container
+            >
+            <ng-container matColumnDef="name"
+              ><th mat-header-cell *matHeaderCellDef>Product</th>
+              <td mat-cell *matCellDef="let p">
+                <span class="cell-name">{{ p.name }}</span>
+              </td></ng-container
+            >
+            <ng-container matColumnDef="price"
+              ><th mat-header-cell *matHeaderCellDef>Price</th>
+              <td mat-cell *matCellDef="let p">
+                <span class="cell-price">{{ p.price | currency }}</span>
+              </td></ng-container
+            >
+            <ng-container matColumnDef="qty"
+              ><th mat-header-cell *matHeaderCellDef>Stock</th>
+              <td mat-cell *matCellDef="let p">
+                <span
+                  class="cell-stock"
+                  [class.low]="p.quantity > 0 && p.quantity < 10"
+                  [class.out]="p.quantity === 0"
+                >
+                  {{ p.quantity }}
+                </span>
+              </td></ng-container
+            >
+            <ng-container matColumnDef="actions"
+              ><th mat-header-cell *matHeaderCellDef></th>
+              <td mat-cell *matCellDef="let p">
+                <div class="actions">
+                  <a
+                    mat-icon-button
+                    [routerLink]="['/products', p.id]"
+                    aria-label="View"
+                    ><mat-icon>visibility</mat-icon></a
+                  >
+                  <a
+                    mat-icon-button
+                    [routerLink]="['/seller/products', p.id, 'edit']"
+                    aria-label="Edit"
+                    ><mat-icon>edit</mat-icon></a
+                  >
+                  <button
+                    mat-icon-button
+                    color="warn"
+                    (click)="remove(p)"
+                    aria-label="Delete"
+                  >
+                    <mat-icon>delete</mat-icon>
+                  </button>
+                </div>
+              </td></ng-container
+            >
+            <tr mat-header-row *matHeaderRowDef="cols"></tr>
+            <tr mat-row *matRowDef="let r; columns: cols" class="data-row"></tr>
+          </table>
+          <mat-paginator
+            [length]="total()"
+            [pageSize]="pageSize()"
+            [pageIndex]="page() - 1"
+            [pageSizeOptions]="[10, 25, 50]"
+            (page)="onPage($event)"
+          />
+        </div>
       }
     </section>
   `,
@@ -131,37 +143,147 @@ import { CurrentUserService } from "@core/services/current-user.service";
         margin-top: 24px;
         background: var(--app-surface);
       }
+
       table {
         width: 100%;
-        border-collapse: collapse;
+        border-collapse: separate;
+        border-spacing: 0;
+        background-color: var(--app-primary-light);
       }
-      .thumb {
-        width: 44px;
-        height: 44px;
-        object-fit: cover;
-        border-radius: var(--app-radius-sm);
-        border: 1px solid var(--app-border);
-      }
+
+      /* Header */
       th.mat-mdc-header-cell {
         font-weight: 600;
         color: var(--app-fg);
-        font-size: 14px;
-        padding: 16px !important;
-        border-bottom: 2px solid var(--app-border);
+        font-size: 12px;
+        text-transform: uppercase;
+        letter-spacing: 0.4px;
+        padding: 14px 16px !important;
+        border-bottom: 1px solid var(--app-border);
+        background: rgba(0, 0, 0, 0.02);
+        white-space: nowrap;
       }
+
+      th.mat-mdc-header-cell:first-of-type {
+        padding-left: 24px !important;
+        border-top-left-radius: var(--app-radius);
+      }
+
+      th.mat-mdc-header-cell:last-of-type {
+        padding-right: 24px !important;
+        border-top-right-radius: var(--app-radius);
+      }
+
+      /* Rows */
+      tr.data-row {
+        transition: background-color 0.15s ease;
+        cursor: default;
+      }
+
+      tr.data-row:hover {
+        background-color: rgba(0, 0, 0, 0.03);
+      }
+
       td.mat-mdc-cell {
-        padding: 16px !important;
+        padding: 12px 16px !important;
         font-size: 14px;
+        color: var(--app-fg);
         border-bottom: 1px solid var(--app-border);
         vertical-align: middle;
       }
-      th.mat-mdc-header-cell:first-of-type,
+
       td.mat-mdc-cell:first-of-type {
         padding-left: 24px !important;
       }
-      th.mat-mdc-header-cell:last-of-type,
+
       td.mat-mdc-cell:last-of-type {
         padding-right: 24px !important;
+      }
+
+      tr.data-row:last-child td.mat-mdc-cell {
+        border-bottom: none;
+      }
+
+      .thumb {
+        width: 48px;
+        height: 48px;
+        object-fit: cover;
+        border-radius: var(--app-radius-sm);
+        border: 1px solid var(--app-border);
+        display: block;
+      }
+
+      .thumb-placeholder {
+        width: 48px;
+        height: 48px;
+        border-radius: var(--app-radius-sm);
+        border: 1px dashed var(--app-border);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: var(--app-muted, #888);
+        background: rgba(0, 0, 0, 0.02);
+      }
+
+      .thumb-placeholder mat-icon {
+        font-size: 20px;
+        width: 20px;
+        height: 20px;
+      }
+
+      .cell-name {
+        font-weight: 500;
+        color: var(--app-fg);
+      }
+
+      .cell-price {
+        font-weight: 600;
+        color: var(--app-fg);
+        font-variant-numeric: tabular-nums;
+      }
+
+      .cell-stock {
+        font-weight: 500;
+        font-variant-numeric: tabular-nums;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 2px 10px;
+        border-radius: 999px;
+        background: rgba(34, 197, 94, 0.1);
+        color: #15803d;
+        font-size: 13px;
+      }
+
+      .cell-stock.low {
+        background: rgba(234, 179, 8, 0.1);
+        color: #a16207;
+      }
+
+      .cell-stock.out {
+        background: rgba(239, 68, 68, 0.1);
+        color: #b91c1c;
+      }
+
+      .actions {
+        display: flex;
+        align-items: center;
+        gap: 4px;
+        justify-content: flex-end;
+      }
+
+      .actions a[mat-icon-button],
+      .actions button[mat-icon-button] {
+        --mdc-icon-button-state-layer-size: 36px;
+        width: 36px;
+        height: 36px;
+        padding: 6px;
+      }
+
+      /* Paginator */
+      mat-paginator {
+        border-top: 1px solid var(--app-border);
+        background-color: var(--app-primary-light);
       }
     `,
   ],
@@ -203,6 +325,7 @@ export class SellerProductsPage {
 
     this.svc.listBySeller(this.page(), this.pageSize(), user.id).subscribe({
       next: (r) => {
+        console.log('r.content :', r.content)
         this.items.set(r.content);
         this.total.set(r.totalElements);
         this.loading.set(false);
