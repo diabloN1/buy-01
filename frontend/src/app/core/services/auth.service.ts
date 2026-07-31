@@ -113,13 +113,8 @@ export class AuthService {
   }
 
   setSession(auth: AuthResponse): void {
-    console.log("Saving token", auth.accessToken);
-
     this.storage.setToken(auth.accessToken);
     this._token.set(auth.accessToken);
-
-    console.log("Signal token:", this._token());
-    console.log("Storage token:", this.storage.getToken());
   }
 
   restoreToken(): void {

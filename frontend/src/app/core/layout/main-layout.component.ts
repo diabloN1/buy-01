@@ -39,27 +39,28 @@ import { CurrentUserService } from "@core/services/current-user.service";
           >Products</a
         >
         @if (auth.isSeller()) {
-        <a mat-button routerLink="/dashboard" routerLinkActive="active">
-          Dashboard
-        </a>
+          <a mat-button routerLink="/dashboard" routerLinkActive="active">
+            Dashboard
+          </a>
 
-        <a mat-button routerLink="/seller/products" routerLinkActive="active">
-          My Products
-        </a>
+          <a mat-button routerLink="/seller/products" routerLinkActive="active">
+            My Products
+          </a>
 
-        <a mat-stroked-button routerLink="/seller/media">Media management</a>
-        } @if (auth.isAdmin()) {
-        <a mat-button routerLink="/admin/dashboard" routerLinkActive="active">
-          Dashboard
-        </a>
+          <a mat-stroked-button routerLink="/seller/media">Media management</a>
+        }
+        @if (auth.isAdmin()) {
+          <a mat-button routerLink="/admin/dashboard" routerLinkActive="active">
+            Dashboard
+          </a>
 
-        <a mat-button routerLink="/admin/products" routerLinkActive="active">
-          Products
-        </a>
+          <a mat-button routerLink="/admin/products" routerLinkActive="active">
+            Products
+          </a>
 
-        <a mat-button routerLink="/admin/users" routerLinkActive="active">
-          Users
-        </a>
+          <a mat-button routerLink="/admin/users" routerLinkActive="active">
+            Users
+          </a>
         }
       </nav>
       <span class="grow"></span>
@@ -73,22 +74,24 @@ import { CurrentUserService } from "@core/services/current-user.service";
         }}</mat-icon>
       </button>
       @if (auth.isAuthenticated()) {
-      <button mat-button [matMenuTriggerFor]="menu">
-        <mat-icon>account_circle</mat-icon>
-        <span class="user-name">{{ currentUser.user()?.name }}</span>
-      </button>
-      <mat-menu #menu="matMenu">
-        <a mat-menu-item routerLink="/profile"
-          ><mat-icon>person</mat-icon>Profile</a
-        >
-        <mat-divider />
-        <button mat-menu-item (click)="logout()">
-          <mat-icon>logout</mat-icon>Log out
+        <button mat-button [matMenuTriggerFor]="menu">
+          <mat-icon>account_circle</mat-icon>
+          <span class="user-name">{{ currentUser.user()?.name }}</span>
         </button>
-      </mat-menu>
+        <mat-menu #menu="matMenu">
+          <a mat-menu-item routerLink="/profile"
+            ><mat-icon>person</mat-icon>Profile</a
+          >
+          <mat-divider />
+          <button mat-menu-item (click)="logout()">
+            <mat-icon>logout</mat-icon>Log out
+          </button>
+        </mat-menu>
       } @else {
-      <a mat-button routerLink="/auth/login">Login</a>
-      <a mat-flat-button color="primary" routerLink="/auth/register">Sign up</a>
+        <a mat-button routerLink="/auth/login">Login</a>
+        <a mat-flat-button color="primary" routerLink="/auth/register"
+          >Sign up</a
+        >
       }
     </mat-toolbar>
     <main class="app-main">

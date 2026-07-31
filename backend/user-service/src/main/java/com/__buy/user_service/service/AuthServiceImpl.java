@@ -78,11 +78,10 @@ public class AuthServiceImpl implements AuthService {
                 .orElseThrow(() -> new UnauthorizedException("User not found"));
 
         String accessToken = jwtService.generateAccessToken(user);
-        String newRefreshToken = jwtService.generateRefreshToken(user);
 
         return new AuthResult(
                 accessToken,
-                newRefreshToken,
+                refreshToken.getToken(),
                 new UserResponse(user));
     }
 }

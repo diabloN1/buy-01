@@ -7,9 +7,8 @@ import { AuthService } from "@core/services/auth.service";
 import { TokenStorage } from "@core/services/token.storage";
 
 export const tokenInterceptor: HttpInterceptorFn = (req, next) => {
-  const injector = inject(Injector);
 
-  const auth = injector.get(AuthService);
+  const auth = inject(AuthService);
   const storage = inject(TokenStorage);
 
   console.log("Interceptor token:", auth.token());
