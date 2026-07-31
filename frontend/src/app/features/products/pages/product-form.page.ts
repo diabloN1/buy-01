@@ -8,7 +8,6 @@ import { CommonModule } from "@angular/common";
 import { ActivatedRoute, Router, RouterLink } from "@angular/router";
 import {
   FormBuilder,
-  FormControl,
   ReactiveFormsModule,
   Validators,
 } from "@angular/forms";
@@ -28,7 +27,6 @@ const MAX_SIZE = 2 * 1024 * 1024;
 @Component({
   selector: "app-product-form",
   standalone: true,
-  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
     CommonModule,
     ReactiveFormsModule,

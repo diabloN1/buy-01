@@ -13,13 +13,13 @@ import { MatPaginatorModule, PageEvent } from "@angular/material/paginator";
 import { MatChipsModule } from "@angular/material/chips";
 import { MatTooltipModule } from "@angular/material/tooltip";
 import { MediaService } from "@core/services/media.service";
-import { AuthService } from "@core/services/auth.service";
 import { NotificationService } from "@core/services/notification.service";
 import { MediaImage } from "@core/models/media.model";
 import { ConfirmDialogComponent } from "@shared/components/confirm-dialog.component";
 import { LoadingSpinnerComponent } from "@shared/components/loading-spinner.component";
 import { EmptyStateComponent } from "@shared/components/empty-state.component";
 import { CurrentUserService } from "@core/services/current-user.service";
+import { ImagePreviewComponent } from "@shared/components/image-preview.component";
 
 @Component({
   selector: "app-media-management",
@@ -36,6 +36,7 @@ import { CurrentUserService } from "@core/services/current-user.service";
     MatTooltipModule,
     LoadingSpinnerComponent,
     EmptyStateComponent,
+    ImagePreviewComponent,
   ],
   template: `
     <section class="container">
@@ -52,138 +53,129 @@ import { CurrentUserService } from "@core/services/current-user.service";
       </div>
 
       @if (loading()) {
-      <app-loading-spinner />
+        <app-loading-spinner />
       } @else if (!items().length) {
-      <app-empty-state
-        icon="collections"
-        title="No media files found"
-        description="You haven't uploaded any media images yet."
-      />
-      } @else {
-      <div class="media-grid">
-        @for (item of items(); track item.id) {
-        <div class="media-card app-card">
-          <div class="media-preview-container">
-            <img
-              [src]="getImageUrl(item.id)"
-              [alt]="item.id"
-              class="media-img"
-              loading="lazy"
-              (click)="previewImage(item)"
-            />
-            <div class="media-overlay">
-              <button
-                mat-mini-fab
-                color="primary"
-                (click)="previewImage(item)"
-                matTooltip="Inspect Image"
-              >
-                <mat-icon>visibility</mat-icon>
-              </button>
-              <button
-                mat-mini-fab
-                color="warn"
-                (click)="removeMedia(item)"
-                matTooltip="Delete Image"
-              >
-                <mat-icon>delete</mat-icon>
-              </button>
-            </div>
-          </div>
-
-          <div class="media-info">
-            <div class="info-row">
-              <span class="media-id" matTooltip="Media ID: {{ item.id }}">
-                <mat-icon inline>tag</mat-icon>
-                {{ item.id | slice : 0 : 12 }}...
-              </span>
-              @if (item.productId) {
-              <a
-                [routerLink]="['/products', item.productId]"
-                class="product-link-chip"
-                matTooltip="Linked Product: {{ item.productId }}"
-              >
-                <mat-icon inline>shopping_bag</mat-icon> Product
-              </a>
-              } @else {
-              <span class="avatar-chip">
-                <mat-icon inline>account_circle</mat-icon> User Media
-              </span>
-              }
-            </div>
-
-            <div class="actions-row">
-              <button
-                mat-button
-                color="accent"
-                class="action-btn"
-                (click)="previewImage(item)"
-              >
-                <mat-icon>zoom_in</mat-icon> Inspect
-              </button>
-              <button
-                mat-button
-                color="warn"
-                class="action-btn"
-                (click)="removeMedia(item)"
-              >
-                <mat-icon>delete_outline</mat-icon> Delete
-              </button>
-            </div>
-          </div>
-        </div>
-        }
-      </div>
-
-      <div class="paginator-wrap app-card">
-        <mat-paginator
-          [length]="total()"
-          [pageSize]="pageSize()"
-          [pageIndex]="page() - 1"
-          [pageSizeOptions]="[12, 24, 48]"
-          (page)="onPage($event)"
+        <app-empty-state
+          icon="collections"
+          title="No media files found"
+          description="You haven't uploaded any media images yet."
         />
-      </div>
+      } @else {
+        <div class="media-grid">
+          @for (item of items(); track item.id) {
+            <div class="media-card app-card">
+              <div class="media-preview-container">
+                <img
+                  [src]="getImageUrl(item.id)"
+                  [alt]="item.id"
+                  class="media-img"
+                  loading="lazy"
+                  (click)="previewImage(item)"
+                />
+                <div class="media-overlay">
+                  <button
+                    mat-mini-fab
+                    color="primary"
+                    (click)="previewImage(item)"
+                    matTooltip="Inspect Image"
+                  >
+                    <mat-icon>visibility</mat-icon>
+                  </button>
+                  <button
+                    mat-mini-fab
+                    color="warn"
+                    (click)="removeMedia(item)"
+                    matTooltip="Delete Image"
+                  >
+                    <mat-icon>delete</mat-icon>
+                  </button>
+                </div>
+              </div>
+
+              <div class="media-info">
+                <div class="info-row">
+                  <span class="media-id" matTooltip="Media ID: {{ item.id }}">
+                    <mat-icon inline>tag</mat-icon>
+                    {{ item.id | slice: 0 : 12 }}...
+                  </span>
+                  @if (item.productId) {
+                    <a
+                      [routerLink]="['/products', item.productId]"
+                      class="product-link-chip"
+                      matTooltip="Linked Product: {{ item.productId }}"
+                    >
+                      <mat-icon inline>shopping_bag</mat-icon> Product
+                    </a>
+                  } @else {
+                    <span class="avatar-chip">
+                      <mat-icon inline>account_circle</mat-icon> User Media
+                    </span>
+                  }
+                </div>
+
+                <div class="actions-row">
+                  <button
+                    mat-button
+                    color="accent"
+                    class="action-btn"
+                    (click)="previewImage(item)"
+                  >
+                    <mat-icon>zoom_in</mat-icon> Inspect
+                  </button>
+                  <button
+                    mat-button
+                    color="warn"
+                    class="action-btn"
+                    (click)="removeMedia(item)"
+                  >
+                    <mat-icon>delete_outline</mat-icon> Delete
+                  </button>
+                </div>
+              </div>
+            </div>
+          }
+        </div>
+
+        <div class="paginator-wrap app-card">
+          <mat-paginator
+            [length]="total()"
+            [pageSize]="pageSize()"
+            [pageIndex]="page() - 1"
+            [pageSizeOptions]="[12, 24, 48]"
+            (page)="onPage($event)"
+          />
+        </div>
       }
 
       <!-- Lightbox Preview Modal -->
-      @if (selectedImage()) {
-      <div class="lightbox-backdrop" (click)="closePreview()">
-        <div class="lightbox-content" (click)="$event.stopPropagation()">
-          <div class="lightbox-header">
-            <span class="lightbox-title">Image Details</span>
-            <button mat-icon-button (click)="closePreview()">
-              <mat-icon>close</mat-icon>
-            </button>
-          </div>
-          <div class="lightbox-body">
-            <img
-              [src]="getImageUrl(selectedImage()!.id)"
-              [alt]="selectedImage()!.id"
-              class="lightbox-img"
-            />
-          </div>
-          <div class="lightbox-footer">
-            <div class="meta-details">
-              <p><strong>ID:</strong> {{ selectedImage()!.id }}</p>
-              @if (selectedImage()!.productId) {
+      <app-image-preview
+        [open]="selectedImage() !== null"
+        [imageUrl]="selectedImage() ? getImageUrl(selectedImage()!.id) : ''"
+        title="Image Details"
+        (closed)="closePreview()"
+      >
+        @if (selectedImage()) {
+          <div class="meta-details">
+            <p><strong>ID:</strong> {{ selectedImage()!.id }}</p>
+
+            @if (selectedImage()!.productId) {
               <p>
                 <strong>Linked Product ID:</strong>
                 {{ selectedImage()!.productId }}
               </p>
-              }
-            </div>
-            <button
-              mat-flat-button
-              color="warn"
-              (click)="removeMedia(selectedImage()!); closePreview()"
-            >
-              <mat-icon>delete</mat-icon> Delete Image
-            </button>
+            }
           </div>
-        </div>
-      </div>
-      }
+
+          <button
+            mat-flat-button
+            color="warn"
+            (click)="removeMedia(selectedImage()!); closePreview()"
+          >
+            <mat-icon>delete</mat-icon>
+            Delete Image
+          </button>
+        }
+      </app-image-preview>
     </section>
   `,
   styles: [
@@ -224,7 +216,9 @@ import { CurrentUserService } from "@core/services/current-user.service";
         border-radius: var(--app-radius, 12px);
         overflow: hidden;
         background: var(--app-surface, #ffffff);
-        transition: transform 0.2s ease, box-shadow 0.2s ease;
+        transition:
+          transform 0.2s ease,
+          box-shadow 0.2s ease;
         display: flex;
         flex-direction: column;
       }
@@ -389,12 +383,14 @@ import { CurrentUserService } from "@core/services/current-user.service";
       .meta-details p {
         margin: 2px 0;
       }
+      mat-paginator {
+        background-color: transparent;
+      }
     `,
   ],
 })
 export class MediaManagementPage {
   private readonly mediaService = inject(MediaService);
-  private readonly auth = inject(AuthService);
   private readonly dialog = inject(MatDialog);
   private readonly notify = inject(NotificationService);
   readonly currentUser = inject(CurrentUserService);

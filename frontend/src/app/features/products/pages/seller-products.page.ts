@@ -150,7 +150,7 @@ import { CurrentUserService } from "@core/services/current-user.service";
         min-width: 700px;
         border-collapse: separate;
         border-spacing: 0;
-        background-color: var(--app-primary-light);
+        background-color: transparent;
       }
 
       /* Header */
@@ -285,7 +285,7 @@ import { CurrentUserService } from "@core/services/current-user.service";
       /* Paginator */
       mat-paginator {
         border-top: 1px solid var(--app-border);
-        background-color: var(--app-primary-light);
+        background-color: transparent;
         min-width: 700px;
       }
     `,
