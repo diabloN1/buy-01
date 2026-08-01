@@ -11,7 +11,7 @@ export const tokenInterceptor: HttpInterceptorFn = (req, next) => {
   const auth = inject(AuthService);
   const storage = inject(TokenStorage);
 
-  console.log("Interceptor token:", auth.token());
+  // console.log("Interceptor token:", auth.token());
 
   const token = storage.getToken();
 

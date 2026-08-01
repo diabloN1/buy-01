@@ -217,7 +217,7 @@ const MAX_SIZE = 2 * 1024 * 1024;
     `,
   ],
 })
-export class ProductFormPage {
+Wexport class ProductFormPage {
   private readonly fb = inject(FormBuilder);
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
@@ -320,9 +320,9 @@ export class ProductFormPage {
       .filter((image) => !image.existing)
       .map((image) => image.file!);
 
-    console.log(this.images());
-    console.log(this.deletedImageIds());
-    console.log(files);
+    // console.log(this.images());
+    // console.log(this.deletedImageIds());
+    // console.log(files);
     const req$ = this.id()
       ? this.svc.update(this.id()!, body, files, this.deletedImageIds())
       : this.svc.create(body, files);

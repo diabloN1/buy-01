@@ -328,7 +328,7 @@ export class SellerProductsPage {
 
     this.svc.listBySeller(this.page(), this.pageSize(), user.id).subscribe({
       next: (r) => {
-        console.log("r.content :", r.content);
+        // console.log("r.content :", r.content);
         this.items.set(r.content);
         this.total.set(r.totalElements);
         this.loading.set(false);
