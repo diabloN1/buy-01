@@ -32,12 +32,12 @@ import { CurrentUserService } from "@core/services/current-user.service";
   template: `
     <mat-toolbar class="app-toolbar">
       <a routerLink="/" class="brand"
-        ><mat-icon>storefront</mat-icon><span>Marketplace</span></a
-      >
+        ><mat-icon>storefront</mat-icon><span>Marketplace</span>
+      </a>
       <nav class="nav">
         <a mat-button routerLink="/products" routerLinkActive="active"
-          >Products</a
-        >
+          >Products
+        </a>
         @if (auth.isSeller()) {
           <a mat-button routerLink="/dashboard" routerLinkActive="active">
             Dashboard
@@ -65,13 +65,14 @@ import { CurrentUserService } from "@core/services/current-user.service";
       </nav>
       <span class="grow"></span>
       <button
-        mat-icon-button
+        matMiniFab
+        class="theme"
         (click)="theme.toggle()"
         [attr.aria-label]="'Toggle theme'"
       >
-        <mat-icon>{{
-          theme.mode() === "dark" ? "light_mode" : "dark_mode"
-        }}</mat-icon>
+        <mat-icon>
+          {{ theme.mode() === "dark" ? "light_mode" : "dark_mode" }}
+        </mat-icon>
       </button>
       @if (auth.isAuthenticated()) {
         <button mat-button [matMenuTriggerFor]="menu">
@@ -174,6 +175,13 @@ import { CurrentUserService } from "@core/services/current-user.service";
         font-weight: 500;
         text-transform: uppercase;
       }
+
+      .theme {
+        box-shadow: none;
+        color: var(--app-fg);
+        background-color: transparent;
+      }
+      
       @media (max-width: 720px) {
         .nav {
           display: none;

@@ -110,14 +110,15 @@ public class UserServiceImpl implements UserService {
         User user = userRepo.findById(userId)
                 .orElseThrow(() -> new UserNotFoundException(userId));
 
-        if (user.getAvatarId() != null) {
-            avatarService.deleteAvatar(user.getAvatarId());
-        }
+        String oldAvatarId = user.getAvatarId();
 
         String avatarId = avatarService.uploadAvatar(avatar);
         user.setAvatarId(avatarId);
-
         userRepo.save(user);
+
+        if (oldAvatarId != null) {
+            avatarService.deleteAvatar(oldAvatarId);
+        }
 
         return mapToResponse(user);
     }
