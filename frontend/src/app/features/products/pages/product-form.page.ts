@@ -217,7 +217,7 @@ const MAX_SIZE = 2 * 1024 * 1024;
     `,
   ],
 })
-Wexport class ProductFormPage {
+export class ProductFormPage {
   private readonly fb = inject(FormBuilder);
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
