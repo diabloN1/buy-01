@@ -36,6 +36,7 @@ import software.amazon.awssdk.services.s3.model.*;
 
 import com.buy01.media.event.AuditAction;
 
+import org.apache.tika.Tika;
 import org.springframework.beans.factory.annotation.Value;
 
 @Slf4j
@@ -47,7 +48,8 @@ public class MediaServiceImpl implements MediaService {
         private final UserClient userClient;
         private final ProductClient productClient;
         private final S3Client s3Client;
-        
+        private final Tika tika = new Tika();
+
         private static final long MAX_FILE_SIZE = 2 * 1024 * 1024;
 
         @Value("${minio.bucket}")
@@ -149,10 +151,17 @@ public class MediaServiceImpl implements MediaService {
                 // BufferedImage preview = ImageIO.read(file.getInputStream());
                 // System.out.println(preview);
 
+                String detectedType = tika.detect(file.getInputStream());
+
+                if (!detectedType.startsWith("image/")) {
+                        throw new BadRequestException(
+                                "Uploaded file is not a valid image.");
+                }
+
                 BufferedImage image = ImageIO.read(file.getInputStream());
                 if (image == null) {
                         throw new BadRequestException(
-                                        "Invalid image.");
+                                        "Uploaded file is not a valid image.");
                 }
         }
 
