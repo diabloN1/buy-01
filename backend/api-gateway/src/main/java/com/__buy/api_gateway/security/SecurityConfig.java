@@ -87,12 +87,25 @@ public class SecurityConfig {
 
         config.setAllowedOrigins(
                 List.of("https://localhost:4200"));
-                
-        config.setAllowedHeaders(
-                List.of("*"));
-
+                        
         config.setAllowedMethods(
-                List.of("*"));
+                List.of(
+                        "GET",
+                        "POST",
+                        "PUT",
+                        "PATCH",
+                        "DELETE",
+                        "OPTIONS"
+                )
+        );
+
+        config.setAllowedHeaders(
+                List.of(
+                        "Authorization",
+                        "Content-Type",
+                        "Accept"
+                )
+        );
 
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
 
