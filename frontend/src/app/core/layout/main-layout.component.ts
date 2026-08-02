@@ -33,7 +33,7 @@ import { CurrentUserService } from "@core/services/current-user.service";
     <mat-toolbar class="app-toolbar">
       <a routerLink="/" class="brand">
         <mat-icon>storefront</mat-icon>
-        <span>Marketplace</span>
+        <span class="title">Marketplace</span>
       </a>
 
       <nav class="nav">
@@ -331,7 +331,8 @@ import { CurrentUserService } from "@core/services/current-user.service";
         display: none;
       }
 
-      @media (max-width: 720px) {
+      @media (max-width: 820px) {
+
         .nav {
           display: none;
         }
