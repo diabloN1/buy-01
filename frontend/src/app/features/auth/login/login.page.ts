@@ -137,7 +137,7 @@ export class LoginPage {
 
   readonly form = this.fb.nonNullable.group({
     email: ["", [Validators.required, Validators.email]],
-    password: ["", [Validators.required, Validators.minLength(8)]],
+    password: ["", [Validators.required]],
   });
 
   submit(): void {
@@ -155,8 +155,10 @@ export class LoginPage {
         this.loading.set(false);
         if (err.status == 401) {
           this.notify.error("Invalid email or password");
+        } else if (err.error?.message) {
+          this.notify.error(err.error.message);
         } else {
-          this.notify.error("An error aquired, please try again later!");
+          this.notify.error("An error occurred, please try again later!");
         }
       },
     });

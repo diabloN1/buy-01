@@ -22,6 +22,7 @@ import com.buy01.product.aop.Auditable;
 import com.buy01.product.DTOs.ProductResponse;
 import com.buy01.product.entity.Product;
 import com.buy01.product.event.AuditAction;
+import com.buy01.product.exception.custom.BadRequestException;
 import com.buy01.product.exception.custom.ForbiddenException;
 import com.buy01.product.exception.custom.NotFoundException;
 import com.buy01.product.repository.ProductRepository;
@@ -57,6 +58,10 @@ public class ProductServiceImpl implements ProductService {
     public ProductResponse createProduct(CreateRequest req, List<MultipartFile> images) {
 
         String currentUserId = getCurrentUUID();
+
+        if (images != null && images.size() > 5) {
+            throw new BadRequestException("Maximum 5 images allowed per product");
+        }
 
         Product product = Product.builder()
                 .name(req.name())
@@ -114,6 +119,12 @@ public class ProductServiceImpl implements ProductService {
 
             productMediaService.deleteImages(
                     deletedImageIds);
+        }
+
+        int currentImageCount = product.getImageIds().size();
+        int newImageCount = (images != null) ? images.size() : 0;
+        if (currentImageCount + newImageCount > 5) {
+            throw new BadRequestException("Maximum 5 images allowed per product");
         }
 
         if (images != null && !images.isEmpty()) {

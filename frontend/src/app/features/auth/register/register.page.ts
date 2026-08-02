@@ -140,10 +140,18 @@ export class RegisterPage {
   readonly form = this.fb.nonNullable.group({
     name: [
       "",
-      [Validators.required, Validators.minLength(2), Validators.maxLength(60)],
+      [Validators.required, Validators.minLength(3), Validators.maxLength(25)],
     ],
     email: ["", [Validators.required, Validators.email]],
-    password: ["", [Validators.required, passwordStrength]],
+    password: [
+      "",
+      [
+        Validators.required,
+        Validators.minLength(8),
+        Validators.maxLength(30),
+        passwordStrength,
+      ],
+    ],
     role: ["USER" as "USER" | "SELLER", [Validators.required]],
   });
 
@@ -156,7 +164,10 @@ export class RegisterPage {
         this.notify.success("Account created");
         this.router.navigateByUrl("/");
       },
-      error: () => this.loading.set(false),
+      error: (err) => {
+        this.loading.set(false);
+        this.notify.error(err.error?.message || "An error occurred during registration.");
+      },
     });
   }
 }

@@ -79,6 +79,7 @@ const MAX_SIZE = 2 * 1024 * 1024;
           <app-field-error [control]="form.controls.price" />
           <app-field-error [control]="form.controls.quantity" />
 
+          @if (images().length < 5) {
           <label
             class="drop app-card"
             appFileDrop
@@ -104,8 +105,15 @@ const MAX_SIZE = 2 * 1024 * 1024;
                 browse
               </button>
             </div>
-            <small class="muted">image/* up to 2 MB each</small>
+            <small class="muted">image/* up to 2 MB each (Max 5 images)</small>
           </label>
+          } @else {
+          <div class="app-card drop" style="cursor: not-allowed; opacity: 0.7;">
+            <mat-icon>block</mat-icon>
+            <div>Maximum of 5 images reached.</div>
+            <small class="muted">Remove an image to upload another.</small>
+          </div>
+          }
 
           @if (uploading()) {
           <div class="muted">Uploading… {{ progress() }}%</div>
@@ -235,14 +243,14 @@ export class ProductFormPage {
   readonly form = this.fb.nonNullable.group({
     name: [
       "",
-      [Validators.required, Validators.minLength(2), Validators.maxLength(120)],
+      [Validators.required, Validators.minLength(3), Validators.maxLength(100)],
     ],
     description: [
       "",
       [
         Validators.required,
-        Validators.minLength(4),
-        Validators.maxLength(2000),
+        Validators.minLength(3),
+        Validators.maxLength(1000),
       ],
     ],
     price: [0, [Validators.required, Validators.min(0.01)]],
@@ -276,6 +284,11 @@ export class ProductFormPage {
   }
 
   onFiles(files: FileList) {
+    if (this.images().length + files.length > 5) {
+      this.notify.error("Maximum 5 images allowed");
+      return;
+    }
+    
     Array.from(files).forEach((file) => {
       if (!file.type.startsWith("image/")) {
         this.notify.error(`${file.name} is not an image`);
@@ -333,7 +346,10 @@ export class ProductFormPage {
         this.notify.success("Saved");
         this.router.navigateByUrl("/seller/products");
       },
-      error: () => this.saving.set(false),
+      error: (err) => {
+        this.saving.set(false);
+        this.notify.error(err.error?.message || "Failed to save product");
+      },
     });
   }
 }

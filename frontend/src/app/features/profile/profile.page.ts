@@ -236,10 +236,7 @@ export class ProfilePage {
   readonly avatarUrl = signal<string | undefined>(undefined);
 
   readonly form = this.fb.nonNullable.group({
-    name: [
-      "",
-      [Validators.required, Validators.minLength(2), Validators.maxLength(60)],
-    ],
+    name: ["", [Validators.required]],
     email: [
       { value: "", disabled: false },
       [Validators.required, Validators.email],
@@ -283,8 +280,8 @@ export class ProfilePage {
 
         input.value = "";
       },
-      error: () => {
-        this.notify.error("Failed to upload avatar");
+      error: (err) => {
+        this.notify.error(err.error?.message || "Failed to upload avatar");
         this.uploading.set(false);
 
         input.value = "";
@@ -329,7 +326,10 @@ export class ProfilePage {
 
         this.notify.success("Profile saved");
       },
-      error: () => this.saving.set(false),
+      error: (err) => {
+        this.saving.set(false);
+        this.notify.error(err.error?.message || "Failed to update profile");
+      },
     });
   }
 }
