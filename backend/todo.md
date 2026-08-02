@@ -6,5 +6,6 @@
 
 [X] - HTTPS end-to-end
 [X] - Cors allowed headers
-[ ] - Normal user is not allowed to change his profile picture.
+[X] - Normal user is not allowed to change his profile picture.
 [ ] - remove secrets from all services and move them to .env and use ${} in docker-compose
+[ ] - (frontend) admin review actions and styling
