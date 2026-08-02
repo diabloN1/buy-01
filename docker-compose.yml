@@ -2,9 +2,6 @@ services:
   kafka:
     image: apache/kafka:4.1.0
 
-    ports:
-      - "9092:9092"
-
     environment:
       KAFKA_NODE_ID: 1
       KAFKA_PROCESS_ROLES: broker,controller
@@ -39,21 +36,20 @@ services:
     volumes:
       - kafka-data:/var/lib/kafka/data
       
-  kafka-ui:
-    image: provectuslabs/kafka-ui:latest
-    ports:
-      - "8085:8080"
-    environment:
-      KAFKA_CLUSTERS_0_NAME: local
-      KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS: kafka:9092
-    depends_on:
-      kafka:
-        condition: service_healthy
+  # kafka-ui:
+  #   image: provectuslabs/kafka-ui:latest
+  #   ports:
+  #     - "8085:8080"
+  #   environment:
+  #     KAFKA_CLUSTERS_0_NAME: local
+  #     KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS: kafka:9092
+  #   depends_on:
+  #     kafka:
+  #       condition: service_healthy
 
   eureka:
     build: ./backend/eureka
-    ports:
-      - "8761:8761"
+
     healthcheck:
       test:
         [
@@ -77,8 +73,7 @@ services:
         condition: service_started
       kafka:
         condition: service_healthy
-    ports:
-      - "8081:8081"
+
     environment:
       JWT_SECRET: ${JWT_SECRET}
     healthcheck:
@@ -102,8 +97,7 @@ services:
         condition: service_healthy
       mongodb:
         condition: service_started
-    ports:
-      - "8082:8082"
+
     environment:
       JWT_SECRET: ${JWT_SECRET}
     healthcheck:
@@ -131,10 +125,10 @@ services:
         condition: service_started
       kafka:
         condition: service_healthy
-    ports:
-      - "8083:8083"
+
     environment:
       JWT_SECRET: ${JWT_SECRET}
+      
     healthcheck:
       test:
         [
@@ -151,6 +145,7 @@ services:
 
   audit:
     build: ./backend/audit-service
+
     depends_on:
       eureka:
         condition: service_healthy
@@ -158,10 +153,10 @@ services:
         condition: service_started
       kafka:
         condition: service_healthy
-    ports:
-      - "8084:8084"
+
     environment:
       JWT_SECRET: ${JWT_SECRET}
+
     healthcheck:
       test:
         [
@@ -177,7 +172,9 @@ services:
       retries: 20
 
   api-gateway:
+
     build: ./backend/api-gateway
+  
     depends_on:
       product:
         condition: service_healthy
@@ -189,8 +186,10 @@ services:
         condition: service_healthy
       kafka:
         condition: service_healthy
+  
     ports:
       - "8080:8080"
+  
     environment:
       SPRING_PROFILES_ACTIVE: docker
       JWT_SECRET: ${JWT_SECRET}
@@ -202,18 +201,14 @@ services:
 
     restart: unless-stopped
 
-    ports:
-      - "27017:27017"
-
     volumes:
       - mongo-data:/data/db
 
   minio:
     image: minio/minio
 
-    ports:
-      - "9000:9000"
-      - "9001:9001"
+    # ports:
+    #   - "9001:9001"
 
     environment:
       MINIO_ROOT_USER: admin
