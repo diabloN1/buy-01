@@ -1,6 +1,6 @@
 .vscode/settings.json
 **/docker.log
 **/.env
+**/*.p12
 docs/
-KafkaConfigConsomerExemple
-KafkaConfigProducerExemple
+generateCerts.sh

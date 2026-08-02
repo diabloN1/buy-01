@@ -51,7 +51,7 @@ services:
         condition: service_healthy
 
   eureka:
-    build: ./eureka
+    build: ./backend/eureka
     ports:
       - "8761:8761"
     healthcheck:
@@ -69,7 +69,7 @@ services:
       retries: 20
 
   user:
-    build: ./user-service
+    build: ./backend/user-service
     depends_on:
       eureka:
         condition: service_healthy
@@ -80,7 +80,7 @@ services:
     ports:
       - "8081:8081"
     environment:
-      JWT_SECRET: tr9+iBC8Pz/AAdHWef4hgQpuN3U7pcOtDj4hgQpuN3U7pcOtDYJl6zRyXI=
+      JWT_SECRET: ${JWT_SECRET}
     healthcheck:
       test:
         [
@@ -96,7 +96,7 @@ services:
       retries: 20
 
   product:
-    build: ./product-service
+    build: ./backend/product-service
     depends_on:
       eureka:
         condition: service_healthy
@@ -105,7 +105,7 @@ services:
     ports:
       - "8082:8082"
     environment:
-      JWT_SECRET: tr9+iBC8Pz/AAdHWef4hgQpuN3U7pcOtDj4hgQpuN3U7pcOtDYJl6zRyXI=
+      JWT_SECRET: ${JWT_SECRET}
     healthcheck:
       test:
         [
@@ -121,7 +121,7 @@ services:
       retries: 20
 
   media:
-    build: ./media-service
+    build: ./backend/media-service
     depends_on:
       eureka:
         condition: service_healthy
@@ -134,7 +134,7 @@ services:
     ports:
       - "8083:8083"
     environment:
-      JWT_SECRET: tr9+iBC8Pz/AAdHWef4hgQpuN3U7pcOtDj4hgQpuN3U7pcOtDYJl6zRyXI=
+      JWT_SECRET: ${JWT_SECRET}
     healthcheck:
       test:
         [
@@ -150,7 +150,7 @@ services:
       retries: 20
 
   audit:
-    build: ./audit-service
+    build: ./backend/audit-service
     depends_on:
       eureka:
         condition: service_healthy
@@ -161,7 +161,7 @@ services:
     ports:
       - "8084:8084"
     environment:
-      JWT_SECRET: tr9+iBC8Pz/AAdHWef4hgQpuN3U7pcOtDj4hgQpuN3U7pcOtDYJl6zRyXI=
+      JWT_SECRET: ${JWT_SECRET}
     healthcheck:
       test:
         [
@@ -177,7 +177,7 @@ services:
       retries: 20
 
   api-gateway:
-    build: ./api-gateway
+    build: ./backend/api-gateway
     depends_on:
       product:
         condition: service_healthy
@@ -193,7 +193,8 @@ services:
       - "8080:8080"
     environment:
       SPRING_PROFILES_ACTIVE: docker
-      JWT_SECRET: tr9+iBC8Pz/AAdHWef4hgQpuN3U7pcOtDj4hgQpuN3U7pcOtDYJl6zRyXI=
+      JWT_SECRET: ${JWT_SECRET}
+      KEYSTORE_PASSWORD: ${GATEWAY_KEYSTORE_PASSWORD}
       EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://eureka:8761/eureka
 
   mongodb:

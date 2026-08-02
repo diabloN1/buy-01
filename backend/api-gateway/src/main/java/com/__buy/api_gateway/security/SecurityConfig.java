@@ -86,7 +86,7 @@ public class SecurityConfig {
         config.setAllowCredentials(true);
 
         config.setAllowedOrigins(
-                List.of("http://localhost:4200"));
+                List.of("https://localhost:4200"));
                 
         config.setAllowedHeaders(
                 List.of("*"));
