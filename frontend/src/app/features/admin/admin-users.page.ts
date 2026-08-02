@@ -75,19 +75,21 @@ import { User } from "@core/models/user.model";
             <th mat-header-cell *matHeaderCellDef></th>
 
             <td mat-cell *matCellDef="let u">
-              <button
-                mat-icon-button
-                color="warn"
-                (click)="remove(u)"
-                aria-label="Delete user"
-              >
-                <mat-icon>delete</mat-icon>
-              </button>
+              <div class="actions">
+                <button
+                  mat-icon-button
+                  color="warn"
+                  (click)="remove(u)"
+                  aria-label="Delete user"
+                >
+                  <mat-icon>delete</mat-icon>
+                </button>
+              </div>
             </td>
           </ng-container>
 
           <tr mat-header-row *matHeaderRowDef="cols"></tr>
-          <tr mat-row *matRowDef="let row; columns: cols"></tr>
+          <tr mat-row *matRowDef="let row; columns: cols" class="data-row"></tr>
         </table>
 
         <mat-paginator
@@ -105,23 +107,91 @@ import { User } from "@core/models/user.model";
   styles: [
     `
       .table-wrap {
-        overflow: hidden;
+        overflow-x: auto;
+        overflow-y: hidden;
         border: 1px solid var(--app-border);
         border-radius: var(--app-radius);
         box-shadow: var(--app-shadow);
         margin-top: 24px;
+        background: var(--app-surface);
       }
 
       table {
         width: 100%;
+        min-width: 650px;
+        border-collapse: separate;
+        border-spacing: 0;
+        background: transparent;
       }
 
+      /* Header */
       th.mat-mdc-header-cell {
         font-weight: 600;
+        color: var(--app-fg);
+        font-size: 12px;
+        text-transform: uppercase;
+        letter-spacing: 0.4px;
+        padding: 14px 16px !important;
+        border-bottom: 1px solid var(--app-border);
+        background: rgba(0, 0, 0, 0.02);
+        white-space: nowrap;
+      }
+
+      th.mat-mdc-header-cell:first-of-type {
+        padding-left: 24px !important;
+        border-top-left-radius: var(--app-radius);
+      }
+
+      th.mat-mdc-header-cell:last-of-type {
+        padding-right: 24px !important;
+        border-top-right-radius: var(--app-radius);
+      }
+
+      /* Rows */
+      tr.data-row {
+        transition: background-color 0.15s ease;
+      }
+
+      tr.data-row:hover {
+        background: rgba(0, 0, 0, 0.03);
       }
 
       td.mat-mdc-cell {
+        padding: 12px 16px !important;
+        font-size: 14px;
+        color: var(--app-fg);
+        border-bottom: 1px solid var(--app-border);
         vertical-align: middle;
+      }
+
+      td.mat-mdc-cell:first-of-type {
+        padding-left: 24px !important;
+      }
+
+      td.mat-mdc-cell:last-of-type {
+        padding-right: 24px !important;
+      }
+
+      tr.data-row:last-child td.mat-mdc-cell {
+        border-bottom: none;
+      }
+
+      .actions {
+        display: flex;
+        justify-content: flex-end;
+      }
+
+      .actions button[mat-icon-button] {
+        --mdc-icon-button-state-layer-size: 36px;
+        width: 36px;
+        height: 36px;
+        padding: 6px;
+      }
+
+      mat-paginator {
+        border-top: 1px solid var(--app-border);
+        background: transparent;
+        min-width: 650px;
       }
     `,
   ],
