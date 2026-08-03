@@ -78,14 +78,17 @@ import { CurrentUserService } from "@core/services/current-user.service";
             /></mat-form-field>
             <app-field-error [control]="form.controls.name" />
 
-            <mat-form-field appearance="outline"
-              ><mat-label>Email</mat-label>
+            <mat-form-field appearance="outline">
+              <mat-label>Email</mat-label>
               <input
                 matInput
                 type="email"
                 formControlName="email"
-                [readonly]="true"
-            /></mat-form-field>
+                maxlength="30"
+              />
+            </mat-form-field>
+
+            <app-field-error [control]="form.controls.email" />
 
             <div class="row">
               <span class="grow"></span>
@@ -219,6 +222,14 @@ import { CurrentUserService } from "@core/services/current-user.service";
           width: 100%;
         }
       }
+      mat-form-field {
+        width: 100%;
+      }
+
+      .mat-mdc-input-element {
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
     `,
   ],
 })
@@ -236,11 +247,8 @@ export class ProfilePage {
   readonly avatarUrl = signal<string | undefined>(undefined);
 
   readonly form = this.fb.nonNullable.group({
-    name: ["", [Validators.required]],
-    email: [
-      { value: "", disabled: false },
-      [Validators.required, Validators.email],
-    ],
+    name: ["", [Validators.required, Validators.maxLength(25)]],
+    email: ["", [Validators.required, Validators.email]],
   });
 
   constructor() {
@@ -312,24 +320,29 @@ export class ProfilePage {
   save() {
     if (this.form.invalid) return;
     this.saving.set(true);
-    this.profile.update({ name: this.form.controls.name.value }).subscribe({
-      next: (user) => {
-        this.form.patchValue({
-          name: user.name,
-          email: user.email,
-        });
+    this.profile
+      .update({
+        name: this.form.controls.name.value,
+        email: this.form.controls.email.value,
+      })
+      .subscribe({
+        next: (user) => {
+          this.form.patchValue({
+            name: user.name,
+            email: user.email,
+          });
 
-        this.avatarUrl.set(user.avatar?.url);
-        this.avatarId.set(user.avatar?.id);
+          this.avatarUrl.set(user.avatar?.url);
+          this.avatarId.set(user.avatar?.id);
 
-        this.saving.set(false);
+          this.saving.set(false);
 
-        this.notify.success("Profile saved");
-      },
-      error: (err) => {
-        this.saving.set(false);
-        this.notify.error(err.error?.message || "Failed to update profile");
-      },
-    });
+          this.notify.success("Profile saved");
+        },
+        error: (err) => {
+          this.saving.set(false);
+          this.notify.error(err.error?.message || "Failed to update profile");
+        },
+      });
   }
 }

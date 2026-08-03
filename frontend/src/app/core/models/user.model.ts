@@ -37,5 +37,6 @@ export interface RegisterRequest {
 }
 export interface UpdateProfileRequest {
   name?: string;
+  email?: string;
   avatarUrl?: string;
 }
