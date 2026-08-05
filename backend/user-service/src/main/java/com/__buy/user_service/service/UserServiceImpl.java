@@ -79,9 +79,17 @@ public class UserServiceImpl implements UserService {
         User user = userRepo.findById(id)
                 .orElseThrow(() -> new UserNotFoundException(id));
 
+
+
+        if (userRepo.findByEmail(updateReq.getEmail()).isPresent())  {
+            throw new EmailAlreadyExistsException(updateReq.getEmail());
+        }
+
         user.setName(updateReq.getName());
+        user.setEmail(updateReq.getEmail());
 
         userRepo.save(user);
+
         return mapToResponse(user);
     }
 

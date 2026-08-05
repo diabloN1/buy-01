@@ -75,30 +75,36 @@ import { EmptyStateComponent } from "@shared/components/empty-state.component";
           <ng-container matColumnDef="actions"
             ><th mat-header-cell *matHeaderCellDef></th>
             <td mat-cell *matCellDef="let p">
-              <a
-                mat-icon-button
-                [routerLink]="['/products', p.id]"
-                aria-label="View"
-                ><mat-icon>visibility</mat-icon></a
-              >
-              <a
-                mat-icon-button
-                [routerLink]="['/seller/products', p.id, 'edit']"
-                aria-label="Edit"
-                ><mat-icon>edit</mat-icon></a
-              >
-              <button
-                mat-icon-button
-                color="warn"
-                (click)="remove(p)"
-                aria-label="Delete"
-              >
-                <mat-icon>delete</mat-icon>
-              </button>
+              <div class="actions">
+                <a
+                  mat-icon-button
+                  [routerLink]="['/products', p.id]"
+                  aria-label="View"
+                >
+                  <mat-icon>visibility</mat-icon>
+                </a>
+
+                <a
+                  mat-icon-button
+                  [routerLink]="['/seller/products', p.id, 'edit']"
+                  aria-label="Edit"
+                >
+                  <mat-icon>edit</mat-icon>
+                </a>
+
+                <button
+                  mat-icon-button
+                  color="warn"
+                  (click)="remove(p)"
+                  aria-label="Delete"
+                >
+                  <mat-icon>delete</mat-icon>
+                </button>
+              </div>
             </td></ng-container
           >
           <tr mat-header-row *matHeaderRowDef="cols"></tr>
-          <tr mat-row *matRowDef="let r; columns: cols"></tr>
+          <tr mat-row *matRowDef="let r; columns: cols" class="data-row"></tr>
         </table>
         <mat-paginator
           [length]="total()"
@@ -114,44 +120,103 @@ import { EmptyStateComponent } from "@shared/components/empty-state.component";
   styles: [
     `
       .table-wrap {
-        overflow: hidden;
+        overflow-x: auto;
+        overflow-y: hidden;
         border: 1px solid var(--app-border);
         border-radius: var(--app-radius);
         box-shadow: var(--app-shadow);
         margin-top: 24px;
         background: var(--app-surface);
       }
+
       table {
         width: 100%;
-        border-collapse: collapse;
+        min-width: 700px;
+        border-collapse: separate;
+        border-spacing: 0;
+        background-color: transparent;
       }
-      .thumb {
-        width: 44px;
-        height: 44px;
-        object-fit: cover;
-        border-radius: var(--app-radius-sm);
-        border: 1px solid var(--app-border);
-      }
+
+      /* Header */
       th.mat-mdc-header-cell {
         font-weight: 600;
         color: var(--app-fg);
-        font-size: 14px;
-        padding: 16px !important;
-        border-bottom: 2px solid var(--app-border);
+        font-size: 12px;
+        text-transform: uppercase;
+        letter-spacing: 0.4px;
+        padding: 14px 16px !important;
+        border-bottom: 1px solid var(--app-border);
+        background: rgba(0, 0, 0, 0.02);
+        white-space: nowrap;
       }
+
+      th.mat-mdc-header-cell:first-of-type {
+        padding-left: 24px !important;
+        border-top-left-radius: var(--app-radius);
+      }
+
+      th.mat-mdc-header-cell:last-of-type {
+        padding-right: 24px !important;
+        border-top-right-radius: var(--app-radius);
+      }
+
+      /* Rows */
+      tr.data-row {
+        transition: background-color 0.15s ease;
+      }
+
+      tr.data-row:hover {
+        background: rgba(0, 0, 0, 0.03);
+      }
+
       td.mat-mdc-cell {
-        padding: 16px !important;
+        padding: 12px 16px !important;
         font-size: 14px;
+        color: var(--app-fg);
         border-bottom: 1px solid var(--app-border);
         vertical-align: middle;
       }
-      th.mat-mdc-header-cell:first-of-type,
+
       td.mat-mdc-cell:first-of-type {
         padding-left: 24px !important;
       }
-      th.mat-mdc-header-cell:last-of-type,
+
       td.mat-mdc-cell:last-of-type {
         padding-right: 24px !important;
+      }
+
+      tr.data-row:last-child td.mat-mdc-cell {
+        border-bottom: none;
+      }
+
+      .thumb {
+        width: 48px;
+        height: 48px;
+        object-fit: cover;
+        border-radius: var(--app-radius-sm);
+        border: 1px solid var(--app-border);
+        display: block;
+      }
+
+      .actions {
+        display: flex;
+        align-items: center;
+        justify-content: flex-end;
+        gap: 4px;
+      }
+
+      .actions a[mat-icon-button],
+      .actions button[mat-icon-button] {
+        --mdc-icon-button-state-layer-size: 36px;
+        width: 36px;
+        height: 36px;
+        padding: 6px;
+      }
+
+      mat-paginator {
+        border-top: 1px solid var(--app-border);
+        background: transparent;
+        min-width: 700px;
       }
     `,
   ],
