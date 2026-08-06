@@ -148,4 +148,27 @@ class UserServiceImplTest {
         }
     }
 
+    @Nested
+    @DisplayName("getAllUsers()")
+    class GetAllUsers {
+
+        @Test
+        @DisplayName("should return a page of UserResponse")
+        void getAllUsers_returnsPageOfUsers() {
+            // given
+            Pageable pageable = PageRequest.of(0, 10);
+            Page<User> userPage = new PageImpl<>(List.of(user));
+
+            when(userRepo.findAll(pageable)).thenReturn(userPage);
+            when(userMapper.toResponse(user)).thenReturn(userResponse);
+
+            // when
+            Page<UserResponse> result = userService.getAllUsers(pageable);
+
+            // then
+            assertThat(result).isNotNull();
+            assertThat(result.getTotalElements()).isEqualTo(1);
+            assertThat(result.getContent().get(0).getId()).isEqualTo(USER_ID);
+        }
+    }
 }
