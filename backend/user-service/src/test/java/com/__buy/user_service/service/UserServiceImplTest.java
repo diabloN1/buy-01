@@ -6,6 +6,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.mock;
 
 import java.util.Optional;
 
@@ -313,4 +314,114 @@ class UserServiceImplTest {
         }
     }
 
+    @Nested
+    @DisplayName("countUsers()")
+    class CountUsers {
+
+        @Test
+        @DisplayName("should return the total number of users")
+        void countUsers_returnsCount() {
+            // given
+            when(userRepo.count()).thenReturn(5L);
+
+            // when
+            long count = userService.countUsers();
+
+            // then
+            assertThat(count).isEqualTo(5L);
+        }
+    }
+
+    @Nested
+    @DisplayName("uploadAvatar()")
+    class UploadAvatar {
+
+        @Test
+        @DisplayName("should upload avatar, save new avatarId and delete old one")
+        void uploadAvatar_withOldAvatar_replacesAndDeletesOld() {
+            // given
+            user.setAvatarId("old-avatar");
+            MultipartFile file = mock(MultipartFile.class);
+
+            when(userRepo.findById(USER_ID)).thenReturn(Optional.of(user));
+            when(avatarService.uploadAvatar(file)).thenReturn(AVATAR_ID);
+            when(userRepo.save(any(User.class))).thenReturn(user);
+            when(userMapper.toResponse(user)).thenReturn(userResponse);
+
+            // when
+            UserResponse result = userService.uploadAvatar(USER_ID, file);
+
+            // then
+            assertThat(result).isNotNull();
+            verify(avatarService).uploadAvatar(file);
+            verify(avatarService).deleteAvatar("old-avatar");
+            verify(userRepo).save(user);
+        }
+
+        @Test
+        @DisplayName("should upload avatar without deleting when no previous avatar exists")
+        void uploadAvatar_noOldAvatar_uploadsWithoutDeleting() {
+            // given
+            MultipartFile file = mock(MultipartFile.class);
+
+            when(userRepo.findById(USER_ID)).thenReturn(Optional.of(user));
+            when(avatarService.uploadAvatar(file)).thenReturn(AVATAR_ID);
+            when(userRepo.save(any(User.class))).thenReturn(user);
+            when(userMapper.toResponse(user)).thenReturn(userResponse);
+
+            // when
+            userService.uploadAvatar(USER_ID, file);
+
+            // then
+            verify(avatarService).uploadAvatar(file);
+            verify(avatarService, never()).deleteAvatar(any());
+        }
+
+        @Test
+        @DisplayName("should throw UserNotFoundException when user does not exist")
+        void uploadAvatar_userNotFound_throwsUserNotFoundException() {
+            // given
+            MultipartFile file = mock(MultipartFile.class);
+            when(userRepo.findById(USER_ID)).thenReturn(Optional.empty());
+
+            // when / then
+            assertThatThrownBy(() -> userService.uploadAvatar(USER_ID, file))
+                    .isInstanceOf(UserNotFoundException.class);
+
+            verify(avatarService, never()).uploadAvatar(any());
+        }
+    }
+
+    @Nested
+    @DisplayName("deleteAvatar()")
+    class DeleteAvatar {
+
+        @Test
+        @DisplayName("should clear avatarId and save user")
+        void deleteAvatar_success_clearsAvatarId() {
+            // given
+            user.setAvatarId(AVATAR_ID);
+            when(userRepo.findById(USER_ID)).thenReturn(Optional.of(user));
+
+            // when
+            userService.deleteAvatar(USER_ID);
+
+            // then
+            assertThat(user.getAvatarId()).isNull();
+            verify(userRepo).save(user);
+        }
+
+        @Test
+        @DisplayName("should throw UserNotFoundException when user does not exist")
+        void deleteAvatar_userNotFound_throwsUserNotFoundException() {
+            // given
+            when(userRepo.findById(USER_ID)).thenReturn(Optional.empty());
+
+            // when / then
+            assertThatThrownBy(() -> userService.deleteAvatar(USER_ID))
+                    .isInstanceOf(UserNotFoundException.class);
+
+            verify(userRepo, never()).save(any());
+        }
+    }
 }
