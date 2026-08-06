@@ -171,4 +171,146 @@ class UserServiceImplTest {
             assertThat(result.getContent().get(0).getId()).isEqualTo(USER_ID);
         }
     }
+
+    @Nested
+    @DisplayName("createUser()")
+    class CreateUser {
+
+        private CreateUserRequest request;
+
+        @BeforeEach
+        void setUp() {
+            request = new CreateUserRequest();
+            request.setName(NAME);
+            request.setEmail(EMAIL);
+            request.setPassword(RAW_PASS);
+        }
+
+        @Test
+        @DisplayName("should create and return UserResponse when email is available")
+        void createUser_success_returnsUserResponse() {
+            // given
+            when(userRepo.existsByEmail(EMAIL)).thenReturn(false);
+            when(passwordEncoder.encode(RAW_PASS)).thenReturn(HASHED_PASS);
+            when(userRepo.save(any(User.class))).thenReturn(user);
+            when(userMapper.toResponse(any(User.class))).thenReturn(userResponse);
+
+            // when
+            UserResponse result = userService.createUser(request);
+
+            // then
+            assertThat(result).isNotNull();
+            assertThat(result.getEmail()).isEqualTo(EMAIL);
+            verify(userRepo).save(any(User.class));
+        }
+
+        @Test
+        @DisplayName("should throw EmailAlreadyExistsException when email is taken")
+        void createUser_duplicateEmail_throwsEmailAlreadyExistsException() {
+            // given
+            when(userRepo.existsByEmail(EMAIL)).thenReturn(true);
+
+            // when / then
+            assertThatThrownBy(() -> userService.createUser(request))
+                    .isInstanceOf(EmailAlreadyExistsException.class);
+
+            verify(userRepo, never()).save(any());
+            verify(passwordEncoder, never()).encode(any());
+        }
+    }
+
+    @Nested
+    @DisplayName("updateUser()")
+    class UpdateUser {
+
+        private UpdateUserRequest request;
+
+        @BeforeEach
+        void setUp() {
+            request = new UpdateUserRequest();
+            request.setName("New Name");
+            request.setEmail("new@gmail.com");
+        }
+
+        @Test
+        @DisplayName("should update name and email and return UserResponse")
+        void updateUser_success_returnsUpdatedUserResponse() {
+            // given
+            when(userRepo.findById(USER_ID)).thenReturn(Optional.of(user));
+            when(userRepo.findByEmail("new@gmail.com")).thenReturn(Optional.empty());
+            when(userRepo.save(any(User.class))).thenReturn(user);
+            when(userMapper.toResponse(user)).thenReturn(userResponse);
+
+            // when
+            UserResponse result = userService.updateUser(USER_ID, request);
+
+            // then
+            assertThat(result).isNotNull();
+            verify(userRepo).save(user);
+        }
+
+        @Test
+        @DisplayName("should throw UserNotFoundException when user does not exist")
+        void updateUser_userNotFound_throwsUserNotFoundException() {
+            // given
+            when(userRepo.findById(USER_ID)).thenReturn(Optional.empty());
+
+            // when / then
+            assertThatThrownBy(() -> userService.updateUser(USER_ID, request))
+                    .isInstanceOf(UserNotFoundException.class);
+
+            verify(userRepo, never()).save(any());
+        }
+
+        @Test
+        @DisplayName("should throw EmailAlreadyExistsException when new email is taken")
+        void updateUser_emailTaken_throwsEmailAlreadyExistsException() {
+            // given
+            User other = User.builder().id("other-456").email("new@gmail.com").build();
+
+            when(userRepo.findById(USER_ID)).thenReturn(Optional.of(user));
+            when(userRepo.findByEmail("new@gmail.com")).thenReturn(Optional.of(other));
+
+            // when / then
+            assertThatThrownBy(() -> userService.updateUser(USER_ID, request))
+                    .isInstanceOf(EmailAlreadyExistsException.class);
+
+            verify(userRepo, never()).save(any());
+        }
+    }
+
+    @Nested
+    @DisplayName("deleteUser()")
+    class DeleteUser {
+
+        @Test
+        @DisplayName("should delete the user and call avatarService.deleteAvatar")
+        void deleteUser_success_deletesUserAndAvatar() {
+            // given
+            user.setAvatarId(AVATAR_ID);
+            when(userRepo.findById(USER_ID)).thenReturn(Optional.of(user));
+
+            // when
+            userService.deleteUser(USER_ID);
+
+            // then
+            verify(avatarService).deleteAvatar(AVATAR_ID);
+            verify(userRepo).delete(user);
+        }
+
+        @Test
+        @DisplayName("should throw UserNotFoundException when user does not exist")
+        void deleteUser_userNotFound_throwsUserNotFoundException() {
+            // given
+            when(userRepo.findById(USER_ID)).thenReturn(Optional.empty());
+
+            // when / then
+            assertThatThrownBy(() -> userService.deleteUser(USER_ID))
+                    .isInstanceOf(UserNotFoundException.class);
+
+            verify(userRepo, never()).delete(any());
+            verify(avatarService, never()).deleteAvatar(any());
+        }
+    }
+
 }
