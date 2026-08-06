@@ -186,4 +186,102 @@ class AuthServiceImplTest {
             verify(jwtService).generateRefreshToken(savedUser);
         }
     }
+
+
+    @Nested
+    @DisplayName("login()")
+    class Login {
+
+        private LoginRequest request;
+
+        @BeforeEach
+        void setUp() {
+            request = new LoginRequest(EMAIL, RAW_PASS);
+        }
+
+        @Test
+        @DisplayName("should return AuthResult with tokens when credentials are valid")
+        void login_success_returnsAuthResult() {
+            // given
+            when(userRepository.findByEmail(EMAIL)).thenReturn(Optional.of(savedUser));
+            when(passwordEncoder.matches(RAW_PASS, HASHED_PASS)).thenReturn(true);
+            when(jwtService.generateAccessToken(savedUser)).thenReturn(ACCESS_TOKEN);
+            when(jwtService.generateRefreshToken(savedUser)).thenReturn(REFRESH_TOKEN);
+
+            // when
+            AuthResult result = authService.login(request);
+
+            // then
+            assertThat(result).isNotNull();
+            assertThat(result.accessToken()).isEqualTo(ACCESS_TOKEN);
+            assertThat(result.refreshToken()).isEqualTo(REFRESH_TOKEN);
+            assertThat(result.user()).isNotNull();
+            assertThat(result.user().getEmail()).isEqualTo(EMAIL);
+        }
+
+        @Test
+        @DisplayName("should throw UnauthorizedException when email is not found")
+        void login_emailNotFound_throwsUnauthorizedException() {
+            // given
+            when(userRepository.findByEmail(EMAIL)).thenReturn(Optional.empty());
+
+            // when / then
+            assertThatThrownBy(() -> authService.login(request))
+                    .isInstanceOf(UnauthorizedException.class)
+                    .hasMessage("Invalid credentials");
+
+            verify(passwordEncoder, never()).matches(anyString(), anyString());
+            verify(jwtService, never()).generateAccessToken(any());
+            verify(jwtService, never()).generateRefreshToken(any());
+        }
+
+        @Test
+        @DisplayName("should throw UnauthorizedException when password does not match")
+        void login_wrongPassword_throwsUnauthorizedException() {
+            // given
+            when(userRepository.findByEmail(EMAIL)).thenReturn(Optional.of(savedUser));
+            when(passwordEncoder.matches(RAW_PASS, HASHED_PASS)).thenReturn(false);
+
+            // when / then
+            assertThatThrownBy(() -> authService.login(request))
+                    .isInstanceOf(UnauthorizedException.class)
+                    .hasMessage("Invalid credentials");
+
+            verify(jwtService, never()).generateAccessToken(any());
+            verify(jwtService, never()).generateRefreshToken(any());
+        }
+
+        @Test
+        @DisplayName("should call generateAccessToken and generateRefreshToken exactly once")
+        void login_success_tokenGenerationCalledOnce() {
+            // given
+            when(userRepository.findByEmail(EMAIL)).thenReturn(Optional.of(savedUser));
+            when(passwordEncoder.matches(RAW_PASS, HASHED_PASS)).thenReturn(true);
+            when(jwtService.generateAccessToken(savedUser)).thenReturn(ACCESS_TOKEN);
+            when(jwtService.generateRefreshToken(savedUser)).thenReturn(REFRESH_TOKEN);
+
+            // when
+            authService.login(request);
+
+            // then
+            verify(jwtService).generateAccessToken(savedUser);
+            verify(jwtService).generateRefreshToken(savedUser);
+        }
+
+        @Test
+        @DisplayName("should use passwordEncoder.matches to verify password")
+        void login_success_usesPasswordEncoderForComparison() {
+            // given
+            when(userRepository.findByEmail(EMAIL)).thenReturn(Optional.of(savedUser));
+            when(passwordEncoder.matches(RAW_PASS, HASHED_PASS)).thenReturn(true);
+            when(jwtService.generateAccessToken(any())).thenReturn(ACCESS_TOKEN);
+            when(jwtService.generateRefreshToken(any())).thenReturn(REFRESH_TOKEN);
+
+            // when
+            authService.login(request);
+
+            // then
+            verify(passwordEncoder).matches(RAW_PASS, HASHED_PASS);
+        }
+    }
 }
