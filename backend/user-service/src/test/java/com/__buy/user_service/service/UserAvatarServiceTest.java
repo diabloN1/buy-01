@@ -40,7 +40,7 @@ public class UserAvatarServiceTest {
 
     @Nested
     @DisplayName("uploadAvatar()")
-    class uploadAvatar {
+    class UploadAvatar {
         @BeforeEach
         void setUp() {
             file = mock(MultipartFile.class);
@@ -83,7 +83,7 @@ public class UserAvatarServiceTest {
 
     @Nested
     @DisplayName("deleteAvatar()")
-    class deleteAvatar {
+    class DeleteAvatar {
         @Test
         @DisplayName("Should delete media")
         void deleteAvatar_shouldDeleteMedia() {
