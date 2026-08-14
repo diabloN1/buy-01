@@ -68,7 +68,7 @@ public class UserAvatarServiceTest {
         }
 
         @Test
-        @DisplayName("Should return an Id for the media created")
+        @DisplayName("Should return the Id of the media created")
         void uploadAvatar_shouldReturnMediaId() {
             // given
             when(mediaClient.upload(file, null)).thenReturn(mediaResponse);
@@ -77,7 +77,7 @@ public class UserAvatarServiceTest {
             String id = userAvatarService.uploadAvatar(file);
 
             // then
-            assertThat(id).isNotBlank();
+            assertThat(id).isEqualTo(mediaResponse.id());
         }
     }
 
@@ -96,7 +96,7 @@ public class UserAvatarServiceTest {
 
         @Test
         @DisplayName("Should not delete media when no media id provided")
-        void deleteAvatar_AvatarNull_S() {
+        void deleteAvatar_AvatarNull_NeverCallMedia() {
             // when
             userAvatarService.deleteAvatar(null);
 

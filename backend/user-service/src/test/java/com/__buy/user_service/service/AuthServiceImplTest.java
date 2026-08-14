@@ -50,10 +50,10 @@ class AuthServiceImplTest {
 
     private static final String EMAIL       = "amine@gmail.com";
     private static final String NAME        = "Amine Yc";
-    private static final String RAW_PASS    = "secret123";
-    private static final String HASHED_PASS = "$2a$10$hashedPassword";
-    private static final String ACCESS_TOKEN  = "access.jwt.token";
-    private static final String REFRESH_TOKEN = "refresh.jwt.token";
+    private static final String RAW_PASS    = "RAW_PASS_123";
+    private static final String HASHED_PASS = "123_SSAP_DEHSAH";
+    private static final String ACCESS_TOKEN  = "header.access_payload.signiture";
+    private static final String REFRESH_TOKEN = "header.refresh_payload.signiture";
 
     private User savedUser;
 

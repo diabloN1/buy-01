@@ -59,9 +59,9 @@ class UserServiceImplTest {
     private static final String USER_ID    = "user-123";
     private static final String EMAIL      = "amine@gmail.com";
     private static final String NAME       = "Amine Yc";
-    private static final String RAW_PASS   = "secret123";
-    private static final String HASHED_PASS = "$2a$10$hashedPassword";
-    private static final String AVATAR_ID  = "avatar-abc";
+    private static final String RAW_PASS    = "RAW_PASS_123";
+    private static final String HASHED_PASS = "123_SSAP_DEHSAH";
+    private static final String AVATAR_ID  = "avatar-123";
 
     private User user;
     private UserResponse userResponse;
