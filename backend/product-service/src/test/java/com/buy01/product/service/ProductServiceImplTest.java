@@ -34,8 +34,10 @@ import org.springframework.web.multipart.MultipartFile;
 
 import com.buy01.product.DTOs.CreateRequest;
 import com.buy01.product.DTOs.ProductResponse;
+import com.buy01.product.DTOs.UpdateRequest;
 import com.buy01.product.entity.Product;
 import com.buy01.product.exception.custom.BadRequestException;
+import com.buy01.product.exception.custom.ForbiddenException;
 import com.buy01.product.exception.custom.NotFoundException;
 import com.buy01.product.repository.ProductRepository;
 
@@ -54,12 +56,15 @@ class ProductServiceImplTest {
 
     private static final String PRODUCT_ID = "Product-123";
     private static final String USER_ID = "user-123";
+    private static final String OTHER_USER_ID = "user-456";
 
     private static final String NAME = "product 1";
     private static final String DESCRIPTION = "product description";
     private static final BigDecimal PRICE = BigDecimal.valueOf(100);
     private static final Integer QUANTITY = 10;
 
+    private static final String IMAGE_ID_1 = "image-1";
+    private static final String IMAGE_ID_2 = "image-2";
 
     private Product product;
 
@@ -289,6 +294,226 @@ class ProductServiceImplTest {
         }
     }
 
+    @Nested
+    @DisplayName("updateProduct()")
+    class UpdateProduct {
+
+        private UpdateRequest request;
+
+        @BeforeEach
+        void setUp() {
+
+            request = new UpdateRequest(
+                    "Updated product",
+                    "Updated description",
+                    BigDecimal.valueOf(200),
+                    20
+            );
+
+            setAuthenticatedUser(USER_ID);
+        }
+
+        @Test
+        @DisplayName("should update product successfully")
+        void updateProduct_success_returnsUpdatedProduct() {
+
+            // given
+            when(productRepo.findById(PRODUCT_ID))
+                    .thenReturn(Optional.of(product));
+
+            when(productRepo.save(any(Product.class)))
+                    .thenReturn(product);
+
+            // when
+            ProductResponse result =
+                    productService.updateProduct(
+                            PRODUCT_ID,
+                            request,
+                            null,
+                            null
+                    );
+
+            // then
+            assertThat(result).isNotNull();
+
+            assertThat(product.getName())
+                    .isEqualTo("Updated product");
+
+            assertThat(product.getDescription())
+                    .isEqualTo("Updated description");
+
+            assertThat(product.getPrice())
+                    .isEqualTo(BigDecimal.valueOf(200));
+
+            assertThat(product.getQuantity())
+                    .isEqualTo(20);
+
+            verify(productRepo).save(product);
+        }
+
+        @Test
+        @DisplayName("should throw NotFoundException when product does not exist")
+        void updateProduct_productNotFound_throwsNotFoundException() {
+
+            // given
+            when(productRepo.findById(PRODUCT_ID))
+                    .thenReturn(Optional.empty());
+
+            // when / then
+            assertThatThrownBy(
+                    () -> productService.updateProduct(
+                            PRODUCT_ID,
+                            request,
+                            null,
+                            null))
+                    .isInstanceOf(NotFoundException.class);
+
+            verify(productRepo, never()).save(any());
+        }
+
+        @Test
+        @DisplayName("should throw ForbiddenException when current user is not owner")
+        void updateProduct_notOwner_throwsForbiddenException() {
+
+            // given
+            product.setUserId(OTHER_USER_ID);
+
+            when(productRepo.findById(PRODUCT_ID))
+                    .thenReturn(Optional.of(product));
+
+            // when / then
+            assertThatThrownBy(
+                    () -> productService.updateProduct(
+                            PRODUCT_ID,
+                            request,
+                            null,
+                            null))
+                    .isInstanceOf(ForbiddenException.class);
+
+            verify(productRepo, never()).save(any());
+        }
+
+        @Test
+        @DisplayName("should throw BadRequestException when total images exceed 5")
+        void updateProduct_tooManyImages_throwsBadRequestException() {
+
+            // given
+            product.setImageIds(
+                    new ArrayList<>(
+                            List.of(
+                                    "1",
+                                    "2",
+                                    "3",
+                                    "4"
+                            )));
+
+            List<MultipartFile> newImages =
+                    List.of(
+                            mockMultipartFile(),
+                            mockMultipartFile()
+                    );
+
+            when(productRepo.findById(PRODUCT_ID))
+                    .thenReturn(Optional.of(product));
+
+            // when / then
+            assertThatThrownBy(
+                    () -> productService.updateProduct(
+                            PRODUCT_ID,
+                            request,
+                            newImages,
+                            null))
+                    .isInstanceOf(BadRequestException.class);
+
+            verify(productRepo, never()).save(any());
+        }
+
+        @Test
+        @DisplayName("should delete requested images")
+        void updateProduct_deletedImages_deletesImages() {
+
+            // given
+            product.setImageIds(
+                    new ArrayList<>(
+                            List.of(
+                                    IMAGE_ID_1,
+                                    IMAGE_ID_2
+                            )));
+
+            when(productRepo.findById(PRODUCT_ID))
+                    .thenReturn(Optional.of(product));
+
+            when(productRepo.save(any(Product.class)))
+                    .thenReturn(product);
+
+            // when
+            productService.updateProduct(
+                    PRODUCT_ID,
+                    request,
+                    null,
+                    List.of(IMAGE_ID_1));
+
+            // then
+            assertThat(product.getImageIds())
+                    .containsExactly(IMAGE_ID_2);
+
+            verify(productMediaService)
+                    .deleteImages(List.of(IMAGE_ID_1));
+
+            verify(productRepo).save(product);
+        }
+
+        @Test
+        @DisplayName("should upload and add new images")
+        void updateProduct_newImages_uploadsAndAddsImages() {
+
+            // given
+            product.setImageIds(
+                    new ArrayList<>(
+                            List.of(IMAGE_ID_1)));
+
+            List<MultipartFile> newImages =
+                    List.of(
+                            mockMultipartFile(),
+                            mockMultipartFile());
+
+            when(productRepo.findById(PRODUCT_ID))
+                    .thenReturn(Optional.of(product));
+
+            when(productMediaService.uploadImages(
+                    newImages,
+                    PRODUCT_ID,
+                    USER_ID))
+                    .thenReturn(List.of("image-3", "image-4"));
+
+            when(productRepo.save(any(Product.class)))
+                    .thenReturn(product);
+
+            // when
+            productService.updateProduct(
+                    PRODUCT_ID,
+                    request,
+                    newImages,
+                    null);
+
+            // then
+            assertThat(product.getImageIds())
+                    .containsExactly(
+                            IMAGE_ID_1,
+                            "image-3",
+                            "image-4");
+
+            verify(productMediaService)
+                    .uploadImages(
+                            newImages,
+                            PRODUCT_ID,
+                            USER_ID);
+
+            verify(productRepo).save(product);
+        }
+    }
+
+   
 
     private void setAuthenticatedUser(String userId) {
 
