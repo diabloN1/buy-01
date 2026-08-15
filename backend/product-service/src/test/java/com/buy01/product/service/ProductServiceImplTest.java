@@ -657,6 +657,27 @@ class ProductServiceImplTest {
         }
     }
 
+    @Nested
+    @DisplayName("countProducts()")
+    class CountProducts {
+
+        @Test
+        @DisplayName("should return the total number of products")
+        void countProducts_returnsCount() {
+
+            // given
+            when(productRepo.count())
+                    .thenReturn(5L);
+
+            // when
+            long count =
+                    productService.countProducts();
+
+            // then
+            assertThat(count).isEqualTo(5L);
+        }
+    }
+
     private void setAuthenticatedUser(String userId) {
 
         Jwt jwt = Jwt.withTokenValue("test-token")
