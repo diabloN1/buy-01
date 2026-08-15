@@ -585,6 +585,77 @@ class ProductServiceImplTest {
         }
     }
 
+    @Nested
+    @DisplayName("removeImageFromProduct()")
+    class RemoveImageFromProduct {
+
+        @Test
+        @DisplayName("should remove image and save product")
+        void removeImageFromProduct_imageExists_removesAndSaves() {
+
+            // given
+            product.setImageIds(
+                    new ArrayList<>(
+                            List.of(
+                                    IMAGE_ID_1,
+                                    IMAGE_ID_2)));
+
+            when(productRepo.findById(PRODUCT_ID))
+                    .thenReturn(Optional.of(product));
+
+            // when
+            productService.removeImageFromProduct(
+                    PRODUCT_ID,
+                    IMAGE_ID_1);
+
+            // then
+            assertThat(product.getImageIds())
+                    .containsExactly(IMAGE_ID_2);
+
+            verify(productRepo).save(product);
+        }
+
+        @Test
+        @DisplayName("should do nothing when product does not exist")
+        void removeImageFromProduct_productNotFound_saveNeverCalled() {
+
+            // given
+            when(productRepo.findById(PRODUCT_ID))
+                    .thenReturn(Optional.empty());
+
+            // when
+            productService.removeImageFromProduct(
+                    PRODUCT_ID,
+                    IMAGE_ID_1);
+
+            // then
+            verify(productRepo, never()).save(any());
+        }
+
+        @Test
+        @DisplayName("should no call save when image does not exist")
+        void removeImageFromProduct_imageNotFound_saveNeverCalled() {
+
+            // given
+            product.setImageIds(
+                    new ArrayList<>(
+                            List.of(IMAGE_ID_1)));
+
+            when(productRepo.findById(PRODUCT_ID))
+                    .thenReturn(Optional.of(product));
+
+            // when
+            productService.removeImageFromProduct(
+                    PRODUCT_ID,
+                    "non-existent-image");
+
+            // then
+            assertThat(product.getImageIds())
+                    .containsExactly(IMAGE_ID_1);
+
+            verify(productRepo, never()).save(any());
+        }
+    }
 
     private void setAuthenticatedUser(String userId) {
 
