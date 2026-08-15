@@ -513,7 +513,78 @@ class ProductServiceImplTest {
         }
     }
 
-   
+    @Nested
+    @DisplayName("deleteProduct()")
+    class DeleteProduct {
+
+        @BeforeEach
+        void setUp() {
+            setAuthenticatedUser(USER_ID);
+        }
+
+        @Test
+        @DisplayName("should delete product and its images")
+        void deleteProduct_success_deletesProductAndImages() {
+
+            // given
+            product.setImageIds(
+                    new ArrayList<>(
+                            List.of(
+                                    IMAGE_ID_1,
+                                    IMAGE_ID_2)));
+
+            when(productRepo.findById(PRODUCT_ID))
+                    .thenReturn(Optional.of(product));
+
+            // when
+            productService.deleteProduct(PRODUCT_ID);
+
+            // then
+            verify(productRepo).delete(product);
+
+            verify(productMediaService)
+                    .deleteImages(product.getImageIds());
+        }
+
+        @Test
+        @DisplayName("should throw NotFoundException when product does not exist")
+        void deleteProduct_productNotFound_throwsNotFoundException() {
+
+            // given
+            when(productRepo.findById(PRODUCT_ID))
+                    .thenReturn(Optional.empty());
+
+            // when / then
+            assertThatThrownBy(
+                    () -> productService.deleteProduct(PRODUCT_ID))
+                    .isInstanceOf(NotFoundException.class);
+
+            verify(productRepo, never()).delete(any());
+            verify(productMediaService, never())
+                    .deleteImages(any());
+        }
+
+        @Test
+        @DisplayName("should throw ForbiddenException when current user is not owner")
+        void deleteProduct_notOwner_throwsForbiddenException() {
+
+            // given
+            product.setUserId(OTHER_USER_ID);
+
+            when(productRepo.findById(PRODUCT_ID))
+                    .thenReturn(Optional.of(product));
+
+            // when / then
+            assertThatThrownBy(
+                    () -> productService.deleteProduct(PRODUCT_ID))
+                    .isInstanceOf(ForbiddenException.class);
+
+            verify(productRepo, never()).delete(any());
+            verify(productMediaService, never())
+                    .deleteImages(any());
+        }
+    }
+
 
     private void setAuthenticatedUser(String userId) {
 
