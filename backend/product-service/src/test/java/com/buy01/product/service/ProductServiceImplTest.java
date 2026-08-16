@@ -252,8 +252,7 @@ class ProductServiceImplTest {
             
             when(productMediaService.uploadImages(
                     any(),
-                    eq(PRODUCT_ID),
-                    eq(USER_ID)))
+                    eq(PRODUCT_ID)))
                     .thenReturn(List.of());
 
             // when
@@ -290,7 +289,7 @@ class ProductServiceImplTest {
 
             verify(productRepo, never()).save(any());
             verify(productMediaService, never())
-                    .uploadImages(any(), any(), any());
+                    .uploadImages(any(), any());
         }
     }
 
@@ -482,8 +481,7 @@ class ProductServiceImplTest {
 
             when(productMediaService.uploadImages(
                     newImages,
-                    PRODUCT_ID,
-                    USER_ID))
+                    PRODUCT_ID))
                     .thenReturn(List.of("image-3", "image-4"));
 
             when(productRepo.save(any(Product.class)))
@@ -506,8 +504,7 @@ class ProductServiceImplTest {
             verify(productMediaService)
                     .uploadImages(
                             newImages,
-                            PRODUCT_ID,
-                            USER_ID);
+                            PRODUCT_ID);
 
             verify(productRepo).save(product);
         }

@@ -76,11 +76,11 @@ public class ProductServiceImpl implements ProductService {
 
         try {
 
-            List<String> imageIds = productMediaService.uploadImages(images, saved.getId(), saved.getUserId());
+            List<String> imageIds = productMediaService.uploadImages(images, saved.getId());
             if (imageIds == null || imageIds.size() == 0) {
-                return mapToResponse(saved); 
-            } 
-            
+                return mapToResponse(saved);
+            }
+
             saved.setImageIds(imageIds);
 
             saved = productRepository.save(saved);
@@ -136,7 +136,7 @@ public class ProductServiceImpl implements ProductService {
 
             List<String> newImages = productMediaService.uploadImages(
                     images,
-                    product.getId(), product.getUserId());
+                    product.getId());
 
             product.getImageIds()
                     .addAll(newImages);
@@ -158,7 +158,7 @@ public class ProductServiceImpl implements ProductService {
 
         productRepository.delete(product);
         productMediaService.deleteImages(product.getImageIds());
-        
+
         log.info("Product {} deleted successfully", id);
     }
 

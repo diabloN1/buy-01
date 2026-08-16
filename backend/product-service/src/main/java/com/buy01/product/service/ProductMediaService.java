@@ -17,12 +17,12 @@ public class ProductMediaService {
 
     private final MediaClient mediaClient;
 
-    public List<String> uploadImages(List<MultipartFile> images, String productId, String userId) {
+    public List<String> uploadImages(List<MultipartFile> images, String productId) {
 
         List<String> imageIds = new ArrayList<>();
 
         for (MultipartFile image : images) {
-            MediaResponse media = mediaClient.upload(image, productId, userId);
+            MediaResponse media = mediaClient.upload(image, productId);
             imageIds.add(media.id());
         }
 
@@ -35,6 +35,6 @@ public class ProductMediaService {
             return;
         }
 
-        imageIds.forEach(mediaClient::delete);
+        imageIds.forEach(id -> mediaClient.delete(id, true));
     }
 }

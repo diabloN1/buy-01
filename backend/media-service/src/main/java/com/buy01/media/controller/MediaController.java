@@ -51,8 +51,9 @@ public class MediaController {
 
         @DeleteMapping("/{id}")
         @PreAuthorize("isAuthenticated()")
-        public ResponseEntity<Void> delete(@PathVariable String id) {
-                mediaService.delete(id);
+        public ResponseEntity<Void> delete(@PathVariable String id,
+                        @RequestParam(required = false) boolean fromService) {
+                mediaService.delete(id, fromService);
                 return ResponseEntity.noContent().build();
         }
 

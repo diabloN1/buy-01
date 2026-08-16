@@ -106,7 +106,7 @@ public class MediaServiceImpl implements MediaService {
 
         @Override
         @Auditable(action = AuditAction.DELETED, entityId = "#id")
-        public void delete(String id) {
+        public void delete(String id, boolean fromService) {
                 Media media = getMediaOrThrow(id);
 
                 verifyOwnership(media);
@@ -115,7 +115,9 @@ public class MediaServiceImpl implements MediaService {
 
                 mediaRepository.delete(media);
 
-                notifyRelatedService(media);
+                if (!fromService) {
+                        notifyRelatedService(media);
+                }
         }
 
         @Override
@@ -155,7 +157,7 @@ public class MediaServiceImpl implements MediaService {
 
                 if (!detectedType.startsWith("image/")) {
                         throw new BadRequestException(
-                                "Uploaded file is not a valid image.");
+                                        "Uploaded file is not a valid image.");
                 }
 
                 BufferedImage image = ImageIO.read(file.getInputStream());
