@@ -35,6 +35,6 @@ public class ProductMediaService {
             return;
         }
 
-        imageIds.forEach(id -> mediaClient.delete(id, true));
+        imageIds.forEach(id -> mediaClient.delete(id));
     }
 }
