@@ -2,6 +2,7 @@ package com.buy01.media.service;
 
 import static org.mockito.Mockito.when;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import java.util.Optional;
 
@@ -19,6 +20,7 @@ import org.springframework.test.util.ReflectionTestUtils;
 import com.buy01.media.client.ProductClient;
 import com.buy01.media.client.UserClient;
 import com.buy01.media.entity.Media;
+import com.buy01.media.exception.custom.NotFoundException;
 import com.buy01.media.repository.MediaRepository;
 
 import software.amazon.awssdk.services.s3.S3Client;
@@ -82,6 +84,16 @@ public class MediaServiceImplTest {
 
             // then
             assertThat(result).usingRecursiveAssertion().isEqualTo(result);
+        }
+
+        @Test
+        @DisplayName("Should throw NotFoundException when invalid Id provided")
+        void get_invalidId_shouldThrowNotFoundException() {
+            // given
+            when(mediaRepository.findById(id)).thenReturn(Optional.empty());
+
+            // when / then
+            assertThatThrownBy(() -> mediaService.get(id)).isInstanceOf(NotFoundException.class);
         }
     }
 
