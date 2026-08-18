@@ -9,7 +9,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import java.io.IOException;
-import java.io.InputStream;
 import java.util.Optional;
 
 import org.apache.tika.Tika;
@@ -204,6 +203,53 @@ public class MediaServiceImplTest {
             verify(s3Client, never()).putObject(
                     any(PutObjectRequest.class),
                     any(RequestBody.class));
+        }
+    }
+
+    @Nested
+    @DisplayName("download()")
+    class Download {
+
+        @Test
+        @DisplayName("Should return resource for valid media ID")
+        void download_validId_ShouldReturnResource() throws IOException {
+            // given
+            when(mediaRepository.findById(id))
+                    .thenReturn(Optional.of(media));
+
+            when(s3Client.getObject(any(GetObjectRequest.class)))
+                    .thenReturn(objectStream);
+
+            // when
+            Resource result = mediaService.download(id);
+
+            // then
+            assertThat(result)
+                    .isInstanceOf(InputStreamResource.class);
+
+            assertThat(result.getInputStream())
+                    .isEqualTo(objectStream);
+
+            verify(mediaRepository).findById(id);
+
+            verify(s3Client).getObject(
+                    argThat((GetObjectRequest request) -> request.bucket().equals("images-bucket")
+                            && request.key().equals(path)));
+        }
+
+        @Test
+        @DisplayName("Should throw NotFoundException when media does not exist")
+        void download_invalidId_ShouldThrowNotFoundException() {
+            // given
+            when(mediaRepository.findById(id))
+                    .thenReturn(Optional.empty());
+
+            // when / then
+            assertThatThrownBy(() -> mediaService.download(id))
+                    .isInstanceOf(NotFoundException.class);
+
+            verify(s3Client, never())
+                    .getObject(any(GetObjectRequest.class));
         }
     }
 
