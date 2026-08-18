@@ -74,6 +74,7 @@ public class MediaServiceImplTest {
     private final String userId = "user-1";
     private final String contentType = "image/png";
 
+    private final String bucketName = "images-bucket";
     private Media media;
 
     @BeforeEach
@@ -81,7 +82,7 @@ public class MediaServiceImplTest {
         ReflectionTestUtils.setField(
                 mediaService,
                 "bucket",
-                "images-bucket");
+                bucketName);
 
         media = Media.builder()
                 .id(id)
@@ -233,7 +234,7 @@ public class MediaServiceImplTest {
             verify(mediaRepository).findById(id);
 
             verify(s3Client).getObject(
-                    argThat((GetObjectRequest request) -> request.bucket().equals("images-bucket")
+                    argThat((GetObjectRequest request) -> request.bucket().equals(bucketName)
                             && request.key().equals(path)));
         }
 
