@@ -2,7 +2,6 @@ package com.buy01.media.service;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.argThat;
-import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -10,6 +9,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.Optional;
 
 import org.apache.tika.Tika;
@@ -21,17 +21,28 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.core.io.ClassPathResource;
+import org.springframework.core.io.InputStreamResource;
 import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.web.multipart.MultipartFile;
+import org.springframework.core.io.Resource;
+import org.springframework.mock.web.MockMultipartFile;
+import org.springframework.security.authentication.TestingAuthenticationToken;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.oauth2.jwt.Jwt;
 
 import com.buy01.media.client.ProductClient;
 import com.buy01.media.client.UserClient;
 import com.buy01.media.entity.Media;
+import com.buy01.media.exception.custom.BadRequestException;
 import com.buy01.media.exception.custom.NotFoundException;
 import com.buy01.media.repository.MediaRepository;
 
+import software.amazon.awssdk.core.ResponseInputStream;
 import software.amazon.awssdk.core.sync.RequestBody;
 import software.amazon.awssdk.services.s3.S3Client;
+import software.amazon.awssdk.services.s3.model.GetObjectRequest;
+import software.amazon.awssdk.services.s3.model.GetObjectResponse;
 import software.amazon.awssdk.services.s3.model.PutObjectRequest;
 
 @ExtendWith(MockitoExtension.class)
@@ -52,6 +63,9 @@ public class MediaServiceImplTest {
     @Mock
     private Tika tika;
 
+    @Mock
+    private ResponseInputStream<GetObjectResponse> objectStream;
+
     @InjectMocks
     private MediaServiceImpl mediaService;
 
@@ -62,7 +76,6 @@ public class MediaServiceImplTest {
     private final String contentType = "image/png";
 
     private Media media;
-    private MultipartFile file;
 
     @BeforeEach
     void setUp() {
@@ -110,17 +123,19 @@ public class MediaServiceImplTest {
     @Nested
     @DisplayName("upload()")
     class Upload {
-
         @BeforeEach
         void setUp() {
-            file = mock(MultipartFile.class);
+            setAuthenticatedUser("USER-123");
         }
 
         @Test
         @DisplayName("Should upload file to Object Storage and return saved media")
         void upload_validArgs_ShouldReturnMedia() throws IOException {
             // given
-            when(mediaRepository.save(any(Media.class))).thenReturn(media);
+            MultipartFile file = loadTestFile("valid.png", "image/png");
+
+            when(mediaRepository.save(any(Media.class)))
+                    .thenReturn(media);
 
             // when
             Media result = mediaService.upload(file, productId);
@@ -139,9 +154,10 @@ public class MediaServiceImplTest {
         @DisplayName("Should save media with correct product ID and content type")
         void upload_validArgs_ShouldSaveCorrectMediaData() throws IOException {
             // given
+            MultipartFile file = loadTestFile("valid.png", "image/png");
 
             when(mediaRepository.save(any(Media.class)))
-                    .thenAnswer(invocation -> invocation.getArgument(0));
+                    .thenReturn(media);
 
             // when
             Media result = mediaService.upload(file, productId);
@@ -153,40 +169,68 @@ public class MediaServiceImplTest {
         }
 
         @Test
-        @DisplayName("Should use generated object name when uploading to S3")
-        void upload_validArgs_ShouldUseGeneratedObjectName() throws IOException {
+        @DisplayName("Should reject non-image file made to .png")
+        void upload_nonImageFile_ShouldThrowBadRequestException() throws IOException {
             // given
-
-            when(mediaRepository.save(any(Media.class)))
-                    .thenAnswer(invocation -> invocation.getArgument(0));
-
-            // when
-            Media result = mediaService.upload(file, productId);
-
-            // then
-            verify(s3Client).putObject(
-                    argThat((PutObjectRequest request) -> request.bucket().equals("images-bucket")
-                            && request.key().equals(result.getPath())
-                            && request.contentType().equals(contentType)),
-                    any(RequestBody.class));
-        }
-
-        @Test
-        @DisplayName("Should not save media when file validation fails")
-        void upload_invalidFile_ShouldNotSaveMedia() throws IOException {
-            // given
-
-            when(file.getOriginalFilename()).thenReturn("file.txt");
-            when(file.getContentType()).thenReturn("text/plain");
+            MultipartFile file = loadTestFile("script-to-png.png", "text/plain");
 
             // when / then
             assertThatThrownBy(() -> mediaService.upload(file, productId))
-                    .isInstanceOf(Exception.class);
+                    .isInstanceOf(BadRequestException.class)
+                    .hasMessage("Only images are allowed.");
 
-            verify(mediaRepository, never()).save(any());
+            verify(mediaRepository, never())
+                    .save(any(Media.class));
+
             verify(s3Client, never()).putObject(
                     any(PutObjectRequest.class),
                     any(RequestBody.class));
         }
+
+        @Test
+        @DisplayName("Should reject file larger than maximum size")
+        void upload_fileTooLarge_ShouldThrowBadRequestException() throws IOException {
+            // given
+            MultipartFile file = loadTestFile("above-max-size.png", "image/png");
+
+            // when / then
+            assertThatThrownBy(() -> mediaService.upload(file, productId))
+                    .isInstanceOf(BadRequestException.class)
+                    .hasMessage("Maximum size is 2 MB.");
+
+            verify(mediaRepository, never())
+                    .save(any(Media.class));
+
+            verify(s3Client, never()).putObject(
+                    any(PutObjectRequest.class),
+                    any(RequestBody.class));
+        }
+    }
+
+    private MultipartFile loadTestFile(String filename, String contentType) throws IOException {
+
+        ClassPathResource resource = new ClassPathResource(filename);
+
+        return new MockMultipartFile(
+                "file",
+                filename,
+                contentType,
+                resource.getInputStream());
+    }
+
+    private void setAuthenticatedUser(String userId) {
+
+        Jwt jwt = Jwt.withTokenValue("test-token")
+                .subject(userId)
+                .header("alg", "none")
+                .build();
+
+        TestingAuthenticationToken authentication = new TestingAuthenticationToken(
+                jwt,
+                null,
+                "ROLE_SELLER");
+
+        SecurityContextHolder.getContext()
+                .setAuthentication(authentication);
     }
 }
