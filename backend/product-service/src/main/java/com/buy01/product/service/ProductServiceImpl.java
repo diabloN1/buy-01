@@ -74,12 +74,13 @@ public class ProductServiceImpl implements ProductService {
 
         Product saved = productRepository.save(product);
 
+        if (images == null || images.size() == 0) {
+                return mapToResponse(saved);
+        }
+
         try {
 
             List<String> imageIds = productMediaService.uploadImages(images, saved.getId());
-            if (imageIds == null || imageIds.size() == 0) {
-                return mapToResponse(saved);
-            }
 
             saved.setImageIds(imageIds);
 
