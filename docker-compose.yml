@@ -211,6 +211,12 @@ services:
       KEYSTORE_PASSWORD: ${GATEWAY_KEYSTORE_PASSWORD}
       EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://eureka:8761/eureka
 
+  frontend:
+    build:
+      context: ./frontend
+    ports:
+      - "4200:8080"
+
   mongodb:
     image: mongo:8
 
